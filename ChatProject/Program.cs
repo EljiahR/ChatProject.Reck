@@ -54,6 +54,5 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/ChatHub");
-app.MapIdentityApi<ChatUser>();
 
 app.Run();
