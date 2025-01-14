@@ -14,6 +14,13 @@ public class UserController : ControllerBase
     {
         _service = service;
     }
+
+    [HttpGet]
+    public IActionResult GetAllUsers()
+    {
+        var users = _service.GetAllUsers();
+        return users.Any() ? Ok(users) : NotFound();
+    }
     
     [HttpPost]
     public IActionResult RegisterUser(ChatUser user)

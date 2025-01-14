@@ -18,7 +18,6 @@ namespace ChatProject.Controllers
         
         // GET: api/Message
         [HttpGet]
-        [Authorize]
         public IActionResult GetMessages()
         {
             var messages = _service.GetAllMessages();
