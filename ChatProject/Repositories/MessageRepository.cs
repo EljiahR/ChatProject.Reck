@@ -9,7 +9,7 @@ public class MessageRepository : IMessageRepository
     private readonly DbContext _context;
     private readonly DbSet<Message> _dbSet;
 
-    public MessageRepository(MessageContext context)
+    public MessageRepository(ChatDbContext context)
     {
         _context = context;
         _dbSet = _context.Set<Message>();

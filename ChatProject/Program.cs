@@ -1,13 +1,15 @@
 using ChatProject.Data;
 using ChatProject.Hubs;
+using ChatProject.Models;
 using ChatProject.Repositories;
 using ChatProject.Services;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<MessageContext>(options =>
-    options.UseSqlite("Data Source=chatlog.db"), ServiceLifetime.Scoped);
+builder.Services.AddDbContext<ChatDbContext>(options =>
+    options.UseSqlite("Data Source=chat.db"), ServiceLifetime.Scoped);
 
 builder.Services.AddCors(options =>
 {
@@ -20,6 +22,10 @@ builder.Services.AddCors(options =>
                 .AllowCredentials();
         });
 });
+
+builder.Services.AddAuthentication();
+builder.Services.AddIdentityApiEndpoints<ChatUser>()
+    .AddEntityFrameworkStores<ChatDbContext>();
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();

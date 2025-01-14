@@ -1,5 +1,6 @@
 using ChatProject.Models;
 using ChatProject.Services;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatProject.Controllers
@@ -17,6 +18,7 @@ namespace ChatProject.Controllers
         
         // GET: api/Message
         [HttpGet]
+        [Authorize]
         public IActionResult GetMessages()
         {
             var messages = _service.GetAllMessages();
