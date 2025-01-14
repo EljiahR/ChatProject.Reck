@@ -1,8 +1,9 @@
 namespace ChatProject.Models;
 
-public class Message(string user, string content)
+public class Message
 {
-    public string Username = user;
-    public string Content = content;
-    public DateTime SentAt = DateTime.Now;
+    public int Id { get; set; }
+    public string Username { get; set; }
+    public string Content { get; set; }
+    public DateTime SentAt { get; set; } = DateTime.Now;
 }

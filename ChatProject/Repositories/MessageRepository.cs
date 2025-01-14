@@ -1,3 +1,4 @@
+using ChatProject.Data;
 using ChatProject.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,7 +9,7 @@ public class MessageRepository : IMessageRepository
     private readonly DbContext _context;
     private readonly DbSet<Message> _dbSet;
 
-    public MessageRepository(DbContext context)
+    public MessageRepository(MessageContext context)
     {
         _context = context;
         _dbSet = _context.Set<Message>();

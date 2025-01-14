@@ -12,9 +12,9 @@ public class ChatHub : Hub
     {
         _service = service;
     }
-    public async Task SendMessage(string user, string message)
+    public async Task SendMessage(string user, string content)
     {
-        _service.AddMessage(new Message(user, message));
-        await Clients.All.SendAsync("ReceiveMessage", user, message);
+        _service.AddMessage(new Message {Username = user, Content = content});
+        await Clients.All.SendAsync("ReceiveMessage", user, content);
     }
 }
