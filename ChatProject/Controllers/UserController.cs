@@ -1,39 +1,30 @@
 using ChatProject.Models;
 using ChatProject.Services;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 
 namespace ChatProject.Controllers;
 
+[Authorize]
 [Route("api/[controller]")]
 [ApiController]
 public class UserController : ControllerBase
 {
-    private readonly IUserService _service;
-
-    public UserController(IUserService service)
+    private readonly SignInManager<ChatUser> _signInManager;
+    private readonly UserManager<ChatUser> _userManager;
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager)
     {
-        _service = service;
-    }
-
-    [HttpGet]
-    public IActionResult GetAllUsers()
-    {
-        var users = _service.GetAllUsers();
-        return users.Any() ? Ok(users) : NotFound();
+        _signInManager = signInManager;
+        _userManager = userManager;
     }
     
+
     [HttpPost]
-    public IActionResult RegisterUser(ChatUser user)
+    public async Task<IActionResult> Logout()
     {
-        try
-        {
-            _service.RegisterUser(user);
-            return Ok(user);
-        }
-        catch (Exception e)
-        {
-            Console.Error.WriteLine(e);
-            return BadRequest("Encountered problem adding user.");
-        }
+        await _signInManager.SignOutAsync();
+
+        return Ok("Logged out successfully!");
     }
 }

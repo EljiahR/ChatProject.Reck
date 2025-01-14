@@ -25,13 +25,12 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddAuthentication();
 builder.Services.AddIdentityApiEndpoints<ChatUser>()
-    .AddEntityFrameworkStores<ChatDbContext>();
+    .AddEntityFrameworkStores<ChatDbContext>()
+    .AddDefaultTokenProviders();
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
-builder.Services.AddScoped<IUserRepository, UserRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
-builder.Services.AddScoped<IUserService, UserService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -55,5 +54,6 @@ app.UseAuthorization();
 
 app.MapControllers();
 app.MapHub<ChatHub>("/ChatHub");
+app.MapIdentityApi<ChatUser>();
 
 app.Run();

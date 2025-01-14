@@ -4,5 +4,4 @@ namespace ChatProject.Models;
 
 public class ChatUser : IdentityUser
 {
-    
 }
