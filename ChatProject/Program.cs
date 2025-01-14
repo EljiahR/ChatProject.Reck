@@ -1,6 +1,13 @@
+using ChatProject.Data;
 using ChatProject.Hubs;
+using ChatProject.Repositories;
+using ChatProject.Services;
+using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
+
+builder.Services.AddDbContext<MessageContext>(options =>
+    options.UseSqlite("Data Source=chatlog.db"), ServiceLifetime.Scoped);
 
 builder.Services.AddCors(options =>
 {
@@ -15,6 +22,8 @@ builder.Services.AddCors(options =>
 });
 
 // Add services to the container.
+builder.Services.AddScoped<IMessageRepository, MessageRepository>();
+builder.Services.AddScoped<IMessageService, MessageService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
