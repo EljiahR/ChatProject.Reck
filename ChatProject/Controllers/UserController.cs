@@ -18,14 +18,12 @@ public class UserController : ControllerBase
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IConfiguration _configuration;
-    private readonly string _jwtKey;
 
     public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _configuration = configuration;
-        _jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
     }
 
     [HttpPost]
@@ -55,6 +53,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost("login")]
+    [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
         if (ModelState.IsValid)
@@ -131,7 +130,7 @@ public class UserController : ControllerBase
             new Claim(ClaimTypes.Name, user.UserName)
         };
 
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET_KEY"]));
         var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
 
         var token = new JwtSecurityToken(
