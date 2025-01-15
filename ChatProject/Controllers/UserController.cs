@@ -99,6 +99,20 @@ public class UserController : ControllerBase
         return Ok(new { user.UserName });
     }
 
+    [HttpGet]
+    [Route("status")]
+    public IActionResult LoginStatus()
+    {
+        var user = User;
+
+        if (user.Identity != null && user.Identity.IsAuthenticated)
+        {
+            return Ok(new { authenticated = true });
+        }
+
+        return Unauthorized();
+    }
+
     [HttpPost]
     [Route("SignOut")]
     public async Task<IActionResult> Logout()
