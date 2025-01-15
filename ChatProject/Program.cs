@@ -1,10 +1,13 @@
+using System.Text;
 using ChatProject.Data;
 using ChatProject.Hubs;
 using ChatProject.Models;
 using ChatProject.Repositories;
 using ChatProject.Services;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -23,10 +26,24 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddAuthentication();
 builder.Services.AddIdentityApiEndpoints<ChatUser>()
     .AddEntityFrameworkStores<ChatDbContext>()
     .AddDefaultTokenProviders();
+
+builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+    .AddJwtBearer(options =>
+    {
+        options.TokenValidationParameters = new TokenValidationParameters
+        {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = builder.Configuration["Jwt:Issuer"],
+            ValidAudience = builder.Configuration["Jwt:Audience"],
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(Environment.GetEnvironmentVariable("JWT_SECRET_KEY")))
+        };
+    });
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();

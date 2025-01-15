@@ -1,8 +1,12 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace ChatProject.Controllers;
 
@@ -13,11 +17,15 @@ public class UserController : ControllerBase
 {
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
+    private readonly IConfiguration _configuration;
+    private readonly string _jwtKey;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _configuration = configuration;
+        _jwtKey = Environment.GetEnvironmentVariable("JWT_SECRET_KEY");
     }
 
     [HttpPost]
@@ -60,7 +68,8 @@ public class UserController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
             if (result.Succeeded)
             {
-                return Ok(new { message = "Login successful!" });
+                var token = GenerateJwtToken(user);
+                return Ok(new { token });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -112,5 +121,26 @@ public class UserController : ControllerBase
             Console.Error.WriteLine(e);
             return BadRequest();
         }
+    }
+
+    private string GenerateJwtToken(ChatUser user)
+    {
+        var claims = new List<Claim>
+        {
+            new Claim(ClaimTypes.NameIdentifier, user.Id),
+            new Claim(ClaimTypes.Name, user.UserName)
+        };
+
+        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_jwtKey));
+        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
+
+        var token = new JwtSecurityToken(
+            _configuration["Jwt:Issuer"],
+            _configuration["Jwt:Audience"],
+            claims,
+            expires: DateTime.Now.AddDays(1),
+            signingCredentials: creds);
+
+        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
