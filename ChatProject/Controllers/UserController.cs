@@ -68,7 +68,16 @@ public class UserController : ControllerBase
             if (result.Succeeded)
             {
                 var token = GenerateJwtToken(user);
-                return Ok(new { token });
+                
+                Response.Cookies.Append("AuthToken", token, new CookieOptions
+                {
+                    HttpOnly = true,
+                    Secure = true, // Use HTTPS
+                    SameSite = SameSiteMode.Strict, // Prevent cross-site usage
+                    Expires = DateTime.UtcNow.AddHours(1)
+                });
+                
+                return Ok(new { message = "Login successful!" });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
