@@ -52,6 +52,17 @@ public class UserController : ControllerBase
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByNameAsync(model.UserName!);
+            if (user == null)
+            {
+                return Unauthorized(new { message = "Invalid username or password." });
+            }
+
+            var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
+            if (result.Succeeded)
+            {
+                return Ok(new { message = "Login successful!" });
+            }
+            return Unauthorized(new { message = "Invalid username or password." });
         }
 
         return BadRequest("Invalid data.");
