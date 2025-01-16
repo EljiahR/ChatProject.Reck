@@ -1,6 +1,7 @@
 using System.Text;
 using ChatProject.Data;
 using ChatProject.Hubs;
+using ChatProject.Middleware;
 using ChatProject.Models;
 using ChatProject.Repositories;
 using ChatProject.Services;
@@ -96,6 +97,9 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowChat");
+
+app.UseMiddleware<JwtCookieMiddleware>();
+app.UseAuthentication();
 app.UseAuthorization();
 
 app.MapControllers();

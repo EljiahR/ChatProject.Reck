@@ -73,7 +73,7 @@ public class UserController : ControllerBase
                 {
                     HttpOnly = true,
                     Secure = true, // Use HTTPS
-                    SameSite = SameSiteMode.Strict, // Prevent cross-site usage
+                    SameSite = SameSiteMode.Lax, // Prevent cross-site usage
                     Expires = DateTime.UtcNow.AddHours(1)
                 });
                 
@@ -104,8 +104,8 @@ public class UserController : ControllerBase
     public IActionResult LoginStatus()
     {
         var user = User;
-
-        if (user.Identity != null && user.Identity.IsAuthenticated)
+        
+        if (user.Identity.IsAuthenticated)
         {
             return Ok(new { authenticated = true });
         }
