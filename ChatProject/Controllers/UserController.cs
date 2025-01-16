@@ -56,6 +56,7 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> Login([FromBody] LoginDto model)
     {
+        await _signInManager.SignOutAsync();
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByNameAsync(model.UserName!);
@@ -67,6 +68,7 @@ public class UserController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
             if (result.Succeeded)
             {
+                /*
                 var token = GenerateJwtToken(user);
                 
                 Response.Cookies.Append("AuthToken", token, new CookieOptions
@@ -76,7 +78,7 @@ public class UserController : ControllerBase
                     SameSite = SameSiteMode.Lax, // Prevent cross-site usage
                     Expires = DateTime.UtcNow.AddHours(1)
                 });
-                
+                */
                 return Ok(new { message = "Login successful!" });
             }
             return Unauthorized(new { message = "Invalid username or password." });
