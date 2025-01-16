@@ -1,15 +1,11 @@
-using System.Text;
 using ChatProject.Data;
 using ChatProject.Hubs;
-using ChatProject.Middleware;
 using ChatProject.Models;
 using ChatProject.Repositories;
 using ChatProject.Services;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
-using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -32,6 +28,10 @@ builder.Services.AddIdentityApiEndpoints<ChatUser>()
     .AddEntityFrameworkStores<ChatDbContext>()
     .AddDefaultTokenProviders();
     
+builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;
+});
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -55,8 +55,6 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 
 app.UseCors("AllowChat");
-
-// app.UseMiddleware<JwtCookieMiddleware>();
 app.UseAuthentication();
 app.UseAuthorization();
 

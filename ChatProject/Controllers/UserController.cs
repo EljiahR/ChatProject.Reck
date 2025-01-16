@@ -68,17 +68,6 @@ public class UserController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
             if (result.Succeeded)
             {
-                /*
-                var token = GenerateJwtToken(user);
-                
-                Response.Cookies.Append("AuthToken", token, new CookieOptions
-                {
-                    HttpOnly = true,
-                    Secure = true, // Use HTTPS
-                    SameSite = SameSiteMode.Lax, // Prevent cross-site usage
-                    Expires = DateTime.UtcNow.AddHours(1)
-                });
-                */
                 return Ok(new { message = "Login successful!" });
             }
             return Unauthorized(new { message = "Invalid username or password." });
@@ -145,26 +134,5 @@ public class UserController : ControllerBase
             Console.Error.WriteLine(e);
             return BadRequest();
         }
-    }
-
-    private string GenerateJwtToken(ChatUser user)
-    {
-        var claims = new List<Claim>
-        {
-            new Claim(ClaimTypes.NameIdentifier, user.Id),
-            new Claim(ClaimTypes.Name, user.UserName)
-        };
-
-        var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["JWT_SECRET_KEY"]));
-        var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
-        var token = new JwtSecurityToken(
-            _configuration["Jwt:Issuer"],
-            _configuration["Jwt:Audience"],
-            claims,
-            expires: DateTime.Now.AddDays(1),
-            signingCredentials: creds);
-
-        return new JwtSecurityTokenHandler().WriteToken(token);
     }
 }
