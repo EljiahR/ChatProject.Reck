@@ -105,7 +105,7 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Route("SignOut")]
+    [Route("logout")]
     public async Task<IActionResult> Logout()
     {
         await _signInManager.SignOutAsync();
