@@ -18,26 +18,10 @@ namespace ChatProject.Controllers
         
         // GET: api/Message
         [HttpGet]
-        public IActionResult GetMessages()
+        public async Task<IActionResult> GetMessages()
         {
-            var messages = _service.GetAllMessages();
+            var messages = await _service.GetAllMessagesAsync();
             return messages.Any() ? Ok(messages) : NotFound();
-        }
-
-        // POST: api/Message
-        [HttpPost]
-        public IActionResult AddMessage(Message message)
-        {
-            try
-            {
-                _service.AddMessage(message);
-                return Ok(message);
-            }
-            catch (Exception e)
-            {
-                Console.Error.WriteLine(e);
-                return BadRequest("Problem with message");
-            }
         }
     }
 }

@@ -12,13 +12,13 @@ public class MessageService : IMessageService
         _repository = repository;
     }
 
-    public IEnumerable<Message> GetAllMessages()
+    public async Task<IEnumerable<Message>> GetAllMessagesAsync()
     {
-        return _repository.GetAllMessages();
+        return await _repository.GetAllMessagesAsync();
     }
 
-    public void AddMessage(Message message)
+    public async Task AddMessageAsync(Message message)
     {
-        _repository.AddMessage(message);
+        await _repository.AddMessageAsync(message);
     }
 }

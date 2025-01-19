@@ -15,15 +15,15 @@ public class MessageRepository : IMessageRepository
         _dbSet = _context.Set<Message>();
     }
 
-    public void AddMessage(Message message)
+    public async Task AddMessageAsync(Message message)
     {
-        _dbSet.Add(message);
+        await _dbSet.AddAsync(message);
         SaveChanges();
     }
 
-    public IEnumerable<Message> GetAllMessages()
+    public async Task<IEnumerable<Message>> GetAllMessagesAsync()
     {
-        return _dbSet.ToList();
+        return await _dbSet.ToListAsync();
     }
 
     public void SaveChanges()
