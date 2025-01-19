@@ -28,7 +28,7 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [AllowAnonymous]
-    [Route("register")]
+    [Route("Register")]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterDto model)
     {
         if (ModelState.IsValid)
@@ -52,9 +52,9 @@ public class UserController : ControllerBase
         return BadRequest("Invalid data type.");
     }
 
-    [HttpPost("login")]
+    [HttpPost("SignIn")]
     [AllowAnonymous]
-    public async Task<IActionResult> Login([FromBody] LoginDto model)
+    public async Task<IActionResult> SignInUser([FromBody] LoginDto model)
     {
         await _signInManager.SignOutAsync();
         if (ModelState.IsValid)
@@ -77,7 +77,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Route("userInfo")]
+    [Route("UserInfo")]
     public async Task<IActionResult> GetUserInfo()
     {
         var user = await _userManager.GetUserAsync(User);
@@ -91,7 +91,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Route("status")]
+    [Route("Status")]
     public IActionResult LoginStatus()
     {
         var user = User;
@@ -105,8 +105,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Route("logout")]
-    public async Task<IActionResult> Logout()
+    [Route("SignOut")]
+    public async Task<IActionResult> SignOutUser()
     {
         await _signInManager.SignOutAsync();
 
