@@ -24,13 +24,22 @@ builder.Services.AddCors(options =>
         });
 });
 
-builder.Services.AddIdentityApiEndpoints<ChatUser>()
+builder.Services.AddIdentity<ChatUser, IdentityRole>()
     .AddEntityFrameworkStores<ChatDbContext>()
     .AddDefaultTokenProviders();
     
 builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+});
+
+builder.Services.AddAuthorization(options =>
+{
+    options.AddPolicy("BelongToChannel", policy =>
+    {
+        policy.RequireClaim("Channel");
+    });
 });
 
 // Add services to the container.
