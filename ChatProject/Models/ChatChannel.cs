@@ -1,6 +1,6 @@
 namespace ChatProject.Models;
 
-public class Channel
+public class ChatChannel
 {
     public int Id { get; set; }
     public List<ChatUser> Admins { get; set; } = new();

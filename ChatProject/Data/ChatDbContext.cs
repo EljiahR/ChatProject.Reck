@@ -11,5 +11,5 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
         Database.EnsureCreated();
     }
     
-    public DbSet<Channel> Channels { get; set; }
+    public DbSet<ChatChannel> Channels { get; set; }
 }
