@@ -9,38 +9,51 @@ namespace ChatProject.Hubs;
 [Authorize]
 public class ChatHub : Hub
 {
-    private readonly IMessageService _service;
+    private readonly IChannelService _service;
+    private readonly UserManager<ChatUser> _userManager;
 
-    public ChatHub(IMessageService service)
+    public ChatHub(IChannelService service, UserManager<ChatUser> userManager)
     {
         _service = service;
+        _userManager = userManager;
     }
     
     [Authorize(Policy = "BelongToChannel")]
-    public async Task SendMessage(string user, string content, string channelName)
+    public async Task SendMessage(string content, int channelId)
     {
-        if (IsInChannel(channelName))
+        if (await IsInChannel(channelId))
         {
-            await _service.AddMessageAsync(new Message {Username = user, Content = content});
-            await Clients.Group(channelName).SendAsync("ReceiveMessage", user, content, channelName);
+            var user = await _userManager.GetUserAsync(Context.User!);
+            
+            await _service.AddMessageToChannelAsync(channelId, new Message {Username = user!.UserName!, Content = content});
+            await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", user, content, channelId);
         }
 
         await Clients.Caller.SendAsync("ReceiveMessage", "Server", "You are not a member of this channel");
     }
-
-    public override async Task OnConnectedAsync()
+    
+    [Authorize(Policy = "BelongToChannel")]
+    public async Task AddToChannel(int channelId)
     {
-        var messages = _service.GetAllMessagesAsync();
-
-        await Clients.Caller.SendAsync("ReceiveChatHistory", messages);
+        if (await IsInChannel(channelId))
+        {
+            var channel = await _service.GetChannelByIdAsync(channelId);
+            await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
+            
+            await Clients.Caller.SendAsync("ReceiveChatHistory", channel!.Messages);
+        }
     }
 
-    public bool IsInChannel(string channelName)
+    public async Task RemoveFromChannel(int channelId)
     {
-        var user = Context.User;
-        if (user == null) return false;
+        await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelId.ToString());
+    }
 
-        var userChannels = user.Claims.Where(x => x.Type == "Channel").Select(x => x.Value).ToList();
-        return userChannels.Contains(channelName);
+    public async Task<bool> IsInChannel(int channelId)
+    {
+        var user = await _userManager.GetUserAsync(Context.User!);
+        if (user == null) return false;
+        
+        return user.ChannelIds.Contains(channelId);
     }
 }

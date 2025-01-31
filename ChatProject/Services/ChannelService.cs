@@ -11,7 +11,11 @@ public class ChannelService : IChannelService
     {
         _repository = repository;
     }
-    
+
+    public async Task<ChatChannel?> GetChannelByIdAsync(int id)
+    {
+        return await _repository.GetChannelByIdAsync(id);
+    }
     public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync()
     {
         return await _repository.GetAllChannelsAsync();
@@ -20,5 +24,10 @@ public class ChannelService : IChannelService
     public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(ChatUser user)
     {
         return await _repository.GetAllUserChannelsAsync(user);
+    }
+
+    public async Task AddMessageToChannelAsync(int id, Message message)
+    {
+        await _repository.AddMessageToChannel(id, message);
     }
 }

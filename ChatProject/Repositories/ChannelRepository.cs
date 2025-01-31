@@ -15,6 +15,10 @@ public class ChannelRepository : IChannelRepository
         _dbSet = _context.Set<ChatChannel>();
     }
 
+    public async Task<ChatChannel?> GetChannelByIdAsync(int id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
     public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync()
     {
         return await _dbSet.ToListAsync();
@@ -23,5 +27,15 @@ public class ChannelRepository : IChannelRepository
     public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(ChatUser user)
     {
         return await _dbSet.Where(channel => channel.Members.Contains(user)).ToListAsync();
+    }
+
+    public async Task AddMessageToChannel(int id, Message message)
+    {
+        var channel = await _dbSet.FindAsync(id);
+        if (channel != null)
+        {
+            channel.Messages.Add(message);
+            await _context.SaveChangesAsync();
+        }
     }
 }

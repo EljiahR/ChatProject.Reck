@@ -7,4 +7,5 @@ public class ChatUser : IdentityUser
 {
     public override string? UserName { get; set; }
     public override string? Email { get; set; }
+    public List<int> ChannelIds { get; set; } = new();
 }
