@@ -13,7 +13,8 @@ public class ChatHub : Hub
 {
     private readonly IChannelService _channelService;
     private readonly UserManager<ChatUser> _userManager;
-    private readonly ConcurrentDictionary<string, HashSet<int>> _userChannels = new(); // Tracking what channels each user has access to without calling db several times
+    // Tracking what channels each user has access to without calling db several times, handles multiple connections from the same user
+    private readonly ConcurrentDictionary<string, Dictionary<string, HashSet<int>>> _userConnections = new(); 
 
     public ChatHub(IChannelService service, UserManager<ChatUser> userManager)
     {
@@ -35,13 +36,24 @@ public class ChatHub : Hub
         await _channelService.AddMessageToChannelAsync(channelId, message);
     }
     
+    // Adds user to all channel groups, handles multiple connections from the same user as well
+    // No I did not come up with this myself
     public override async Task OnConnectedAsync()
     {
-        var userId = Context.UserIdentifier!; 
+        var userId = Context.UserIdentifier!;
+        var connectionId = Context.ConnectionId;
         
         var user = await _userManager.GetUserAsync(Context.User!);
         var channelIds = user!.ChannelIds;
-        _userChannels[userId] = new HashSet<int>(channelIds);
+
+        _userConnections.AddOrUpdate(userId, 
+            _ => new Dictionary<string, HashSet<int>> {{connectionId, new HashSet<int>(channelIds)}},
+            (_, connections) =>
+            {
+                connections[connectionId] = new HashSet<int>(channelIds);
+                return connections;
+            }
+        );
 
         foreach (var channelId in channelIds)
         {
@@ -51,10 +63,31 @@ public class ChatHub : Hub
         await base.OnConnectedAsync();
     }
 
+    // Handles disconnects for a user based on connection, removes user if all connections are disconnected
+    // This does not handle irregular disconnects
+    public override Task OnDisconnectedAsync(Exception? exception)
+    {
+        var userId = Context.UserIdentifier;
+        var connectionId = Context.ConnectionId;
+
+        if (_userConnections.TryGetValue(userId!, out var connections))
+        {
+            connections.Remove(connectionId);
+
+            if (connections.Count == 0)
+            {
+                _userConnections.TryRemove(userId!, out _);
+            }
+        }
+        
+        return base.OnDisconnectedAsync(exception);
+    }
+
     private bool IsInChannel(int channelId)
     {
         var userId = Context.UserIdentifier;
-        return _userChannels.TryGetValue(userId!, out var channels) && channels.Contains(channelId);
+        var connectionId = Context.ConnectionId;
+        return _userConnections.TryGetValue(userId!, out var connections) && connections[connectionId].Contains(channelId);
 
     }
     
