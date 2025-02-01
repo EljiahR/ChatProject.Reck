@@ -1,3 +1,5 @@
+using System.Collections.Concurrent;
+using System.Text.RegularExpressions;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -9,51 +11,50 @@ namespace ChatProject.Hubs;
 [Authorize]
 public class ChatHub : Hub
 {
-    private readonly IChannelService _service;
+    private readonly IChannelService _channelService;
     private readonly UserManager<ChatUser> _userManager;
+    private readonly ConcurrentDictionary<string, HashSet<int>> _userChannels = new(); // Tracking what channels each user has access to without calling db several times
 
     public ChatHub(IChannelService service, UserManager<ChatUser> userManager)
     {
-        _service = service;
+        _channelService = service;
         _userManager = userManager;
     }
     
-    [Authorize(Policy = "BelongToChannel")]
     public async Task SendMessage(string content, int channelId)
     {
-        if (await IsInChannel(channelId))
+        if (!IsInChannel(channelId))
         {
-            var user = await _userManager.GetUserAsync(Context.User!);
-            
-            await _service.AddMessageToChannelAsync(channelId, new Message {Username = user!.UserName!, Content = content});
-            await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", user, content, channelId);
+            throw new HubException("Unauthorized");
         }
-
-        await Clients.Caller.SendAsync("ReceiveMessage", "Server", "You are not a member of this channel");
+        
+        var user = await _userManager.GetUserAsync(Context.User!);
+        var message = new Message {Content = content, Username = user!.UserName!};
+        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
+        await _channelService.AddMessageToChannelAsync(channelId, message);
     }
     
-    [Authorize(Policy = "BelongToChannel")]
-    public async Task AddToChannel(int channelId)
+    public override async Task OnConnectedAsync()
     {
-        if (await IsInChannel(channelId))
-        {
-            var channel = await _service.GetChannelByIdAsync(channelId);
-            await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
-            
-            await Clients.Caller.SendAsync("ReceiveChatHistory", channel!.Messages);
-        }
-    }
-
-    public async Task RemoveFromChannel(int channelId)
-    {
-        await Groups.RemoveFromGroupAsync(Context.ConnectionId, channelId.ToString());
-    }
-
-    public async Task<bool> IsInChannel(int channelId)
-    {
-        var user = await _userManager.GetUserAsync(Context.User!);
-        if (user == null) return false;
+        var userId = Context.UserIdentifier!; 
         
-        return user.ChannelIds.Contains(channelId);
+        var user = await _userManager.GetUserAsync(Context.User!);
+        var channelIds = user!.ChannelIds;
+        _userChannels[userId] = new HashSet<int>(channelIds);
+
+        foreach (var channelId in channelIds)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
+        }
+
+        await base.OnConnectedAsync();
     }
+
+    public bool IsInChannel(int channelId)
+    {
+        var userId = Context.UserIdentifier;
+        return _userChannels.TryGetValue(userId!, out var channels) && channels.Contains(channelId);
+
+    }
+    
 }
