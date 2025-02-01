@@ -1,4 +1,5 @@
 using ChatProject.Data;
+using ChatProject.Helpers;
 using ChatProject.Hubs;
 using ChatProject.Models;
 using ChatProject.Repositories;
@@ -45,6 +46,7 @@ builder.Services.AddAuthorization(options =>
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
 builder.Services.AddScoped<IMessageService, MessageService>();
+builder.Services.AddSingleton<ConnectionManager>();
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle

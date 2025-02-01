@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using System.Text.RegularExpressions;
+using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -13,18 +14,20 @@ public class ChatHub : Hub
 {
     private readonly IChannelService _channelService;
     private readonly UserManager<ChatUser> _userManager;
-    // Tracking what channels each user has access to without calling db several times, handles multiple connections from the same user
-    private readonly ConcurrentDictionary<string, Dictionary<string, HashSet<int>>> _userConnections = new(); 
+    private readonly ConnectionManager _connectionManager;
 
-    public ChatHub(IChannelService service, UserManager<ChatUser> userManager)
+    public ChatHub(IChannelService service, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
     {
         _channelService = service;
         _userManager = userManager;
+        _connectionManager = connectionManager;
     }
     
     public async Task SendMessage(string content, int channelId)
     {
-        if (!IsInChannel(channelId))
+        var userId = Context.UserIdentifier;
+        var connectionId = Context.ConnectionId;
+        if (!_connectionManager.IsInChannel(userId!, connectionId, channelId))
         {
             throw new HubException("Unauthorized");
         }
@@ -47,20 +50,13 @@ public class ChatHub : Hub
         var user = await _userManager.GetUserAsync(Context.User!);
         var channelIds = user!.ChannelIds;
 
-        _userConnections.AddOrUpdate(userId, 
-            _ => new Dictionary<string, HashSet<int>> {{connectionId, new HashSet<int>(channelIds)}},
-            (_, connections) =>
-            {
-                connections[connectionId] = new HashSet<int>(channelIds);
-                return connections;
-            }
-        );
-
+        _connectionManager.AddConnection(userId, connectionId, channelIds);
+        
         foreach (var channelId in channelIds)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
         }
-
+        
         await base.OnConnectedAsync();
     }
 
@@ -70,26 +66,9 @@ public class ChatHub : Hub
     {
         var userId = Context.UserIdentifier;
         var connectionId = Context.ConnectionId;
-
-        if (_userConnections.TryGetValue(userId!, out var connections))
-        {
-            connections.Remove(connectionId);
-
-            if (connections.Count == 0)
-            {
-                _userConnections.TryRemove(userId!, out _);
-            }
-        }
+        
+        _connectionManager.RemoveConnection(userId!, connectionId);
         
         return base.OnDisconnectedAsync(exception);
     }
-
-    private bool IsInChannel(int channelId)
-    {
-        var userId = Context.UserIdentifier;
-        var connectionId = Context.ConnectionId;
-        return _userConnections.TryGetValue(userId!, out var connections) && connections[connectionId].Contains(channelId);
-
-    }
-    
 }

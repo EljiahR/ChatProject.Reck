@@ -1,7 +1,11 @@
+using ChatProject.Helpers;
+using ChatProject.Hubs;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.SignalR;
 
 namespace ChatProject.Controllers;
 
@@ -11,18 +15,34 @@ namespace ChatProject.Controllers;
 public class ChannelController : ControllerBase
 {
     private readonly IChannelService _service;
+    private readonly UserManager<ChatUser> _userManager;
+    private readonly IHubContext<ChatHub> _hubContext;
+    private readonly ConnectionManager _connectionManager;
 
-    public ChannelController(IChannelService service)
+    public ChannelController(IChannelService service, UserManager<ChatUser> userManager, IHubContext<ChatHub> hubContext, ConnectionManager connectionManager)
     {
         _service = service;
+        _userManager = userManager;
+        _hubContext = hubContext;
+        _connectionManager = connectionManager;
     }
 
     [HttpPost]
     [Route("New")]
     public async Task<IActionResult> CreateChannel(string channelName)
     {
-        var newChannel = new ChatChannel { Name = channelName };
+        var user = await _userManager.GetUserAsync(User);
+        var newChannel = new ChatChannel { Name = channelName, CreatedBy = user!.Id};
+        
+        user.ChannelIds.Add(newChannel.Id);
         await _service.AddChannelAsync(newChannel);
+
+        var userConnections = _connectionManager.GetConnections(user.Id);
+        // Fix below
+        foreach (var connectionId in userConnections)
+        {
+        }
+        
         return Ok(newChannel.Id);
     }
 }
