@@ -96,7 +96,7 @@ public class UserController : ControllerBase
     {
         var user = User;
         
-        if (user.Identity.IsAuthenticated)
+        if (user.Identity!.IsAuthenticated)
         {
             return Ok(new { authenticated = true });
         }

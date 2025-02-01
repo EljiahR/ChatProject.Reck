@@ -24,9 +24,9 @@ public class ChannelRepository : IChannelRepository
         return await _dbSet.ToListAsync();
     }
 
-    public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(ChatUser user)
+    public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(string userId)
     {
-        return await _dbSet.Where(channel => channel.Members.Contains(user)).ToListAsync();
+        return await _dbSet.Where(channel => channel.MemberIds.Contains(userId)).ToListAsync();
     }
 
     public async Task AddChannelAsync(ChatChannel newChannel)

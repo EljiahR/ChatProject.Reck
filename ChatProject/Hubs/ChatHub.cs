@@ -32,8 +32,9 @@ public class ChatHub : Hub
         var user = await _userManager.GetUserAsync(Context.User!);
         var message = new Message {Content = content, Username = user!.UserName!};
         
-        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
         await _channelService.AddMessageToChannelAsync(channelId, message);
+        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
+        
     }
     
     // Adds user to all channel groups, handles multiple connections from the same user as well
