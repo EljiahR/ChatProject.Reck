@@ -29,7 +29,13 @@ public class ChannelRepository : IChannelRepository
         return await _dbSet.Where(channel => channel.Members.Contains(user)).ToListAsync();
     }
 
-    public async Task AddMessageToChannel(int id, Message message)
+    public async Task AddChannelAsync(ChatChannel newChannel)
+    {
+        await _dbSet.AddAsync(newChannel);
+        await _context.SaveChangesAsync();
+    }
+
+    public async Task AddMessageToChannelAsync(int id, Message message)
     {
         var channel = await _dbSet.FindAsync(id);
         if (channel != null)

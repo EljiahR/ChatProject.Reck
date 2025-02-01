@@ -26,8 +26,13 @@ public class ChannelService : IChannelService
         return await _repository.GetAllUserChannelsAsync(user);
     }
 
+    public async Task AddChannelAsync(ChatChannel newChannel)
+    {
+        await _repository.AddChannelAsync(newChannel);
+    }
+
     public async Task AddMessageToChannelAsync(int id, Message message)
     {
-        await _repository.AddMessageToChannel(id, message);
+        await _repository.AddMessageToChannelAsync(id, message);
     }
 }

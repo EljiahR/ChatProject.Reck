@@ -30,6 +30,7 @@ public class ChatHub : Hub
         
         var user = await _userManager.GetUserAsync(Context.User!);
         var message = new Message {Content = content, Username = user!.UserName!};
+        
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
         await _channelService.AddMessageToChannelAsync(channelId, message);
     }
@@ -50,7 +51,7 @@ public class ChatHub : Hub
         await base.OnConnectedAsync();
     }
 
-    public bool IsInChannel(int channelId)
+    private bool IsInChannel(int channelId)
     {
         var userId = Context.UserIdentifier;
         return _userChannels.TryGetValue(userId!, out var channels) && channels.Contains(channelId);
