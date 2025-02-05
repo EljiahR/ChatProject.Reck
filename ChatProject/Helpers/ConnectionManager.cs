@@ -66,6 +66,11 @@ public class ConnectionManager
         }
     }
 
+    public List<int> GetChannels(string userId)
+    {
+        return _userChannels[userId].ToList();
+    }
+
     public List<string> GetConnections(string userId)
     {
         return _userConnections.TryGetValue(userId, out var connections) ? connections.ToList() : new List<string>();

@@ -48,9 +48,16 @@ public class ChatHub : Hub
         var connectionId = Context.ConnectionId;
 
         _connectionManager.AddConnection(userId, connectionId);
-        
-        var user = await _userManager.GetUserAsync(Context.User!);
-        var channelIds = user!.ChannelIds;
+        List<int> channelIds;
+        if (_connectionManager.GetConnections(userId).Count == 1)
+        {
+            var user = await _userManager.GetUserAsync(Context.User!);
+            channelIds = user!.ChannelIds;
+        }
+        else
+        {
+            channelIds = _connectionManager.GetChannels(userId);
+        }
         
         foreach (var channelId in channelIds)
         {
