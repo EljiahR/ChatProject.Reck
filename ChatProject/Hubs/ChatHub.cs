@@ -27,7 +27,7 @@ public class ChatHub : Hub
     {
         var userId = Context.UserIdentifier;
         var connectionId = Context.ConnectionId;
-        if (!_connectionManager.IsInChannel(userId!, connectionId, channelId))
+        if (!_connectionManager.IsInChannel(userId!, channelId))
         {
             throw new HubException("Unauthorized");
         }
@@ -46,11 +46,11 @@ public class ChatHub : Hub
     {
         var userId = Context.UserIdentifier!;
         var connectionId = Context.ConnectionId;
+
+        _connectionManager.AddConnection(userId, connectionId);
         
         var user = await _userManager.GetUserAsync(Context.User!);
         var channelIds = user!.ChannelIds;
-
-        _connectionManager.AddConnection(userId, connectionId, channelIds);
         
         foreach (var channelId in channelIds)
         {
