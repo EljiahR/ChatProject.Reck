@@ -32,7 +32,7 @@ public class ChatHub : Hub
         }
         
         var user = await _userManager.GetUserAsync(Context.User!);
-        var message = new Message {Content = content, Username = user!.UserName!};
+        var message = new Message {Content = content, Username = user!.UserName!, ChannelId = channelId};
         
         await _channelService.AddMessageToChannelAsync(channelId, message);
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
@@ -62,6 +62,15 @@ public class ChatHub : Hub
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
         }
+
+        var userChannels = await _channelService.GetAllUserChannelsAsync(userId);
+        var messageHistory = new List<Message>();
+        foreach (var channel in userChannels)
+        {
+            messageHistory.AddRange(channel.Messages);
+        }
+
+        await Clients.Caller.SendAsync("ReceiveMessageHistory", messageHistory);
         
         await base.OnConnectedAsync();
     }
