@@ -26,7 +26,6 @@ public class ChatHub : Hub
     public async Task SendMessage(string content, int channelId)
     {
         var userId = Context.UserIdentifier;
-        var connectionId = Context.ConnectionId;
         if (!_connectionManager.IsInChannel(userId!, channelId))
         {
             throw new HubException("Unauthorized");

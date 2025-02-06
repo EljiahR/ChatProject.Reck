@@ -37,10 +37,13 @@ public class ChannelController : ControllerBase
         user.ChannelIds.Add(newChannel.Id);
         await _service.AddChannelAsync(newChannel);
 
-        var userConnections = _connectionManager.GetConnections(user.Id);
-        // Fix below
-        foreach (var connectionId in userConnections)
+        // Updating connection manager so user can use the new channel
+        _connectionManager.AddChannel(user.Id, newChannel.Id);
+
+        var connectionIds = _connectionManager.GetConnections(user.Id);
+        foreach (var connectionId in connectionIds)
         {
+            await _hubContext.Groups.AddToGroupAsync(connectionId, newChannel.Id.ToString());
         }
         
         return Ok(newChannel.Id);
