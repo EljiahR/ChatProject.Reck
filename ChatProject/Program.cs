@@ -28,7 +28,17 @@ builder.Services.AddCors(options =>
 builder.Services.AddIdentity<ChatUser, IdentityRole>()
     .AddEntityFrameworkStores<ChatDbContext>()
     .AddDefaultTokenProviders();
-    
+
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    options.Password.RequireDigit = false;
+    options.Password.RequireLowercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 6;
+    options.Password.RequiredUniqueChars = 1;
+});
+
 builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
 {
     options.Cookie.SameSite = SameSiteMode.None;

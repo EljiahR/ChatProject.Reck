@@ -1,6 +1,7 @@
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -92,13 +93,12 @@ public class UserController : ControllerBase
 
     [HttpGet]
     [Route("Status")]
-    public IActionResult LoginStatus()
+    public async Task<IActionResult> LoginStatus()
     {
-        var user = User;
-        
-        if (user.Identity!.IsAuthenticated)
+        if (User.Identity!.IsAuthenticated)
         {
-            return Ok(new { authenticated = true });
+            var userBo = await _userManager.GetUserAsync(User);
+            return Ok(ModelConverter.UserBoToDto(userBo!));
         }
 
         return Unauthorized();

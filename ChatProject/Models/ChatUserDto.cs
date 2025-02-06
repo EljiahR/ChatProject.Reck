@@ -1,0 +1,8 @@
+namespace ChatProject.Models;
+
+public class ChatUserDto
+{
+    
+    public required string UserName { get; set; }
+    public required List<int> ChannelIds { get; set; }
+}
