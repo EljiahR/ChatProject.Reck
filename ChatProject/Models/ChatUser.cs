@@ -5,8 +5,7 @@ namespace ChatProject.Models;
 
 public class ChatUser : IdentityUser
 {
-    [Required]
-    public override string UserName { get; set; }
+    public override required string? UserName { get; set; }
     public override string? Email { get; set; }
     public List<int> ChannelIds { get; set; } = new();
 }

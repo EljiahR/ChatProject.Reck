@@ -5,6 +5,7 @@ using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.IdentityModel.Tokens;
@@ -34,6 +35,12 @@ public class UserController : ControllerBase
     {
         if (ModelState.IsValid)
         {
+            var existingUser = await _userManager.FindByNameAsync(model.UserName);
+            if (existingUser != null)
+            {
+                return BadRequest(new { message = "Name taken"});
+            }
+            
             var user = new ChatUser
             {
                 UserName = model.UserName,
