@@ -19,12 +19,14 @@ public class UserController : ControllerBase
 {
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
+    private readonly ChannelService _channelService;
     private readonly IConfiguration _configuration;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IConfiguration configuration)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, ChannelService channelService, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _channelService = channelService;
         _configuration = configuration;
     }
 
@@ -105,7 +107,8 @@ public class UserController : ControllerBase
         if (User.Identity!.IsAuthenticated)
         {
             var userBo = await _userManager.GetUserAsync(User);
-            return Ok(ModelConverter.UserBoToDto(userBo!));
+            var channelBos = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
+            return Ok(ModelConverter.UserBoToDto(userBo!, channelBos));
         }
 
         return Unauthorized();
