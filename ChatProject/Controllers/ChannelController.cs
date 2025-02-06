@@ -29,10 +29,10 @@ public class ChannelController : ControllerBase
 
     [HttpPost]
     [Route("New")]
-    public async Task<IActionResult> CreateChannel(string channelName)
+    public async Task<IActionResult> CreateChannel([FromBody] NewChannelDto model)
     {
         var user = await _userManager.GetUserAsync(User);
-        var newChannel = new ChatChannel { Name = channelName, CreatedBy = user!.Id};
+        var newChannel = new ChatChannel { Name = model.Name, CreatedBy = user!.Id};
         
         user.ChannelIds.Add(newChannel.Id);
         await _service.AddChannelAsync(newChannel);
@@ -47,5 +47,11 @@ public class ChannelController : ControllerBase
         }
         
         return Ok(newChannel.Id);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetAllChannels()
+    {
+        return Ok(await _service.GetAllChannelsAsync());
     }
 }

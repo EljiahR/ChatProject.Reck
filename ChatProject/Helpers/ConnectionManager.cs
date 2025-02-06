@@ -12,7 +12,7 @@ public class ConnectionManager
     public void AddConnection(string userId, string connectionId)
     {
         _userConnections.AddOrUpdate(userId, 
-            _ => new HashSet<string>() {{connectionId}},
+            _ => new HashSet<string>() {connectionId},
             (_, connections) =>
             {
                 connections.Add(connectionId);
@@ -24,7 +24,7 @@ public class ConnectionManager
     public void AddChannel(string userId, int channelId)
     {
         _userChannels.AddOrUpdate(userId, 
-            _ => new HashSet<int>() {{channelId}},
+            _ => new HashSet<int>() {channelId},
             (_, channels) =>
             {
                 channels.Add(channelId);

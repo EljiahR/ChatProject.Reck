@@ -19,10 +19,10 @@ public class UserController : ControllerBase
 {
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
-    private readonly ChannelService _channelService;
+    private readonly IChannelService _channelService;
     private readonly IConfiguration _configuration;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, ChannelService channelService, IConfiguration configuration)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChannelService channelService, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;

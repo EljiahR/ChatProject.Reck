@@ -61,13 +61,14 @@ public class ChatHub : Hub
         foreach (var channelId in channelIds)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
+            _connectionManager.AddChannel(userId, channelId);
         }
 
         var userChannels = await _channelService.GetAllUserChannelsAsync(userId);
-        var messageHistory = new List<Message>();
+        var messageHistory = new Dictionary<int, List<Message>>();
         foreach (var channel in userChannels)
         {
-            messageHistory.AddRange(channel.Messages);
+            messageHistory[channel.Id] = channel.Messages;
         }
 
         await Clients.Caller.SendAsync("ReceiveMessageHistory", messageHistory);
