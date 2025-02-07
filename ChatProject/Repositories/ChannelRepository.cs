@@ -38,7 +38,7 @@ public class ChannelRepository : IChannelRepository
 
     public async Task AddMessageToChannelAsync(int id, Message message)
     {
-        var channel = await _dbSet.FindAsync(id);
+        var channel = await _dbSet.Include(c => c.Messages).FirstOrDefaultAsync(x => x.Id == id);
         if (channel != null)
         {
             channel.Messages.Add(message);

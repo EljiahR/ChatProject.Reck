@@ -36,7 +36,8 @@ public class ChannelController : ControllerBase
         
         var newId = await _service.AddChannelAsync(newChannel);
         user.ChannelIds.Add(newId);
-
+        await _userManager.UpdateAsync(user);
+        
         // Updating connection manager so user can use the new channel
         _connectionManager.AddChannel(user.Id, newId);
 

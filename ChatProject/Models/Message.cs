@@ -7,4 +7,5 @@ public class Message
     public string Content { get; set; }
     public DateTime SentAt { get; set; } = DateTime.Now;
     public int ChannelId { get; set; }
+    public ChatChannel Channel { get; set; }
 }
