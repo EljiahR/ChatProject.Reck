@@ -33,7 +33,7 @@ public class ConnectionManager
         );
     }
     
-    public void AddChannels(string userId, int[] channelIds)
+    public void AddChannels(string userId, List<int> channelIds)
     {
         _userChannels.AddOrUpdate(userId, 
             _ => channelIds.ToHashSet(),

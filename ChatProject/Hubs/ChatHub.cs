@@ -52,6 +52,7 @@ public class ChatHub : Hub
         {
             var user = await _userManager.GetUserAsync(Context.User!);
             channelIds = user!.ChannelIds;
+            _connectionManager.AddChannels(userId, channelIds);
         }
         else
         {
@@ -61,7 +62,6 @@ public class ChatHub : Hub
         foreach (var channelId in channelIds)
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
-            _connectionManager.AddChannel(userId, channelId);
         }
 
         var userChannels = await _channelService.GetAllUserChannelsAsync(userId);

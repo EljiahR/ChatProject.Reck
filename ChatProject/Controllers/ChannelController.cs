@@ -34,11 +34,11 @@ public class ChannelController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         var newChannel = new ChatChannel { Name = model.Name, CreatedBy = user!.Id};
         
-        user.ChannelIds.Add(newChannel.Id);
-        await _service.AddChannelAsync(newChannel);
+        var newId = await _service.AddChannelAsync(newChannel);
+        user.ChannelIds.Add(newId);
 
         // Updating connection manager so user can use the new channel
-        _connectionManager.AddChannel(user.Id, newChannel.Id);
+        _connectionManager.AddChannel(user.Id, newId);
 
         var connectionIds = _connectionManager.GetConnections(user.Id);
         foreach (var connectionId in connectionIds)

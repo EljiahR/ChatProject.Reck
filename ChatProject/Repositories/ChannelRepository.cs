@@ -29,10 +29,11 @@ public class ChannelRepository : IChannelRepository
         return await _dbSet.Where(channel => channel.CreatedBy == userId || channel.AdminIds.Contains(userId) || channel.MemberIds.Contains(userId)).ToListAsync();
     }
 
-    public async Task AddChannelAsync(ChatChannel newChannel)
+    public async Task<int> AddChannelAsync(ChatChannel newChannel)
     {
         await _dbSet.AddAsync(newChannel);
         await _context.SaveChangesAsync();
+        return newChannel.Id;
     }
 
     public async Task AddMessageToChannelAsync(int id, Message message)
