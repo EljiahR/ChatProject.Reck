@@ -12,4 +12,13 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
     }
     
     public DbSet<ChatChannel> Channels { get; set; }
+
+    protected override void OnModelCreating(ModelBuilder builder)
+    {
+        builder.Entity<ChatChannel>()
+            .HasMany(e => e.Messages)
+            .WithOne(e => e.Channel)
+            .HasForeignKey(e => e.ChannelId)
+            .IsRequired();
+    }
 }

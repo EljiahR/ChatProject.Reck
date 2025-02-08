@@ -68,7 +68,7 @@ public class ChatHub : Hub
         var messageHistory = new Dictionary<int, List<Message>>();
         foreach (var channel in userChannels)
         {
-            messageHistory[channel.Id] = channel.Messages;
+            messageHistory[channel.Id] = channel.Messages.ToList();
         }
 
         await Clients.Caller.SendAsync("ReceiveMessageHistory", messageHistory);
