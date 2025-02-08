@@ -21,7 +21,7 @@ public class ChannelRepository : IChannelRepository
     }
     public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync()
     {
-        return await _dbSet.ToListAsync();
+        return await _dbSet.Include(c => c.ChannelMessages).AsNoTracking().ToListAsync();
     }
 
     public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(string userId)
@@ -38,7 +38,10 @@ public class ChannelRepository : IChannelRepository
 
     public async Task AddMessageToChannelAsync(int id, ChatMessage chatMessage)
     {
-        var channel = await _dbSet.Include(c => c.ChannelMessages).FirstOrDefaultAsync(x => x.Id == id);
+        var channel = await _dbSet
+            .Include(c => c.ChannelMessages)
+            .FirstOrDefaultAsync(x => x.Id == id);
+        
         if (channel != null)
         {
             channel.ChannelMessages.Add(chatMessage);

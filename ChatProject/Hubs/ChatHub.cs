@@ -34,7 +34,7 @@ public class ChatHub : Hub
         var user = await _userManager.GetUserAsync(Context.User!);
         var message = new ChatMessage {Content = content, Username = user!.UserName!, ChannelId = channelId};
 
-        await _messageService.AddMessageAsync(message);
+        await _channelService.AddMessageToChannelAsync(channelId, message);
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
         
     }

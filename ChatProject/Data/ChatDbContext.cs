@@ -18,7 +18,7 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
     {
         builder.Entity<ChatChannel>()
             .HasMany(e => e.ChannelMessages)
-            .WithOne(e => e.Channel)
+            .WithOne()
             .HasForeignKey(e => e.ChannelId)
             .IsRequired();
         
