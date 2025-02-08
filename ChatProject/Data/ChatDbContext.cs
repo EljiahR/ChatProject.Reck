@@ -11,14 +11,17 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
         Database.EnsureCreated();
     }
     
-    public DbSet<ChatChannel> Channels { get; set; }
+    public DbSet<ChatChannel> ChatChannels { get; set; }
+    public DbSet<ChatMessage> ChatMessages { get; set; }
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
         builder.Entity<ChatChannel>()
-            .HasMany(e => e.Messages)
+            .HasMany(e => e.ChannelMessages)
             .WithOne(e => e.Channel)
             .HasForeignKey(e => e.ChannelId)
             .IsRequired();
+        
+        base.OnModelCreating(builder);
     }
 }

@@ -4,6 +4,6 @@ namespace ChatProject.Services;
 
 public interface IMessageService
 {
-    Task<IEnumerable<Message>> GetAllMessagesAsync();
-    Task AddMessageAsync(Message message);
+    Task<IEnumerable<ChatMessage>> GetAllMessagesAsync();
+    Task AddMessageAsync(ChatMessage chatMessage);
 }

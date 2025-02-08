@@ -36,12 +36,12 @@ public class ChannelRepository : IChannelRepository
         return newChannel.Id;
     }
 
-    public async Task AddMessageToChannelAsync(int id, Message message)
+    public async Task AddMessageToChannelAsync(int id, ChatMessage chatMessage)
     {
-        var channel = await _dbSet.Include(c => c.Messages).FirstOrDefaultAsync(x => x.Id == id);
+        var channel = await _dbSet.Include(c => c.ChannelMessages).FirstOrDefaultAsync(x => x.Id == id);
         if (channel != null)
         {
-            channel.Messages.Add(message);
+            channel.ChannelMessages.Add(chatMessage);
             await _context.SaveChangesAsync();
         }
     }

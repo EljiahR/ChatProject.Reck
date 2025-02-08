@@ -4,6 +4,6 @@ namespace ChatProject.Repositories;
 
 public interface IMessageRepository
 {
-    Task<IEnumerable<Message>> GetAllMessagesAsync();
-    Task AddMessageAsync(Message message);
+    Task<IEnumerable<ChatMessage>> GetAllMessagesAsync();
+    Task AddMessageAsync(ChatMessage chatMessage);
 }

@@ -7,27 +7,28 @@ namespace ChatProject.Repositories;
 public class MessageRepository : IMessageRepository
 {
     private readonly DbContext _context;
-    private readonly DbSet<Message> _dbSet;
+    private readonly DbSet<ChatMessage> _dbSet;
 
     public MessageRepository(ChatDbContext context)
     {
         _context = context;
-        _dbSet = _context.Set<Message>();
+        _dbSet = _context.Set<ChatMessage>();
     }
 
-    public async Task AddMessageAsync(Message message)
+    public async Task AddMessageAsync(ChatMessage chatMessage)
     {
-        await _dbSet.AddAsync(message);
-        SaveChanges();
+        await _context.Entry(chatMessage).Reference(m => m.Channel).LoadAsync();
+        await _dbSet.AddAsync(chatMessage);
+        await SaveChangesAsync();
     }
 
-    public async Task<IEnumerable<Message>> GetAllMessagesAsync()
+    public async Task<IEnumerable<ChatMessage>> GetAllMessagesAsync()
     {
         return await _dbSet.ToListAsync();
     }
 
-    public void SaveChanges()
+    public async Task SaveChangesAsync()
     {
-        _context.SaveChanges();
+        _context.SaveChangesAsync();
     }
 }

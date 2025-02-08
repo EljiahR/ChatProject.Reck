@@ -1,5 +1,3 @@
-using System.Collections.Concurrent;
-using System.Text.RegularExpressions;
 using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Services;
@@ -13,12 +11,14 @@ namespace ChatProject.Hubs;
 public class ChatHub : Hub
 {
     private readonly IChannelService _channelService;
+    private readonly IMessageService _messageService;
     private readonly UserManager<ChatUser> _userManager;
     private readonly ConnectionManager _connectionManager;
 
-    public ChatHub(IChannelService service, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
+    public ChatHub(IChannelService channelService, IMessageService messageService, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
     {
-        _channelService = service;
+        _channelService = channelService;
+        _messageService = messageService;
         _userManager = userManager;
         _connectionManager = connectionManager;
     }
@@ -32,9 +32,9 @@ public class ChatHub : Hub
         }
         
         var user = await _userManager.GetUserAsync(Context.User!);
-        var message = new Message {Content = content, Username = user!.UserName!, ChannelId = channelId};
-        
-        await _channelService.AddMessageToChannelAsync(channelId, message);
+        var message = new ChatMessage {Content = content, Username = user!.UserName!, ChannelId = channelId};
+
+        await _messageService.AddMessageAsync(message);
         await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
         
     }
@@ -65,10 +65,10 @@ public class ChatHub : Hub
         }
 
         var userChannels = await _channelService.GetAllUserChannelsAsync(userId);
-        var messageHistory = new Dictionary<int, List<Message>>();
+        var messageHistory = new Dictionary<int, List<ChatMessage>>();
         foreach (var channel in userChannels)
         {
-            messageHistory[channel.Id] = channel.Messages.ToList();
+            messageHistory[channel.Id] = channel.ChannelMessages.ToList();
         }
 
         await Clients.Caller.SendAsync("ReceiveMessageHistory", messageHistory);

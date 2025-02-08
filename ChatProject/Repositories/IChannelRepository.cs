@@ -9,5 +9,5 @@ public interface IChannelRepository
     Task<IEnumerable<ChatChannel>> GetAllChannelsAsync();
     Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(string userId);
     Task<int> AddChannelAsync(ChatChannel newChannel);
-    Task AddMessageToChannelAsync(int id, Message message);
+    Task AddMessageToChannelAsync(int id, ChatMessage chatMessage);
 }

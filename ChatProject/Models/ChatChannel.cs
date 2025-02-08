@@ -7,5 +7,5 @@ public class ChatChannel
     public string CreatedBy { get; set; }
     public List<string> AdminIds { get; set; } = new();
     public List<string> MemberIds { get; set; } = new();
-    public ICollection<Message> Messages { get; set; } = new List<Message>();
+    public ICollection<ChatMessage> ChannelMessages { get; set; } = new List<ChatMessage>();
 }

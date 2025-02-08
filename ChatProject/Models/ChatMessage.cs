@@ -1,6 +1,6 @@
 namespace ChatProject.Models;
 
-public class Message
+public class ChatMessage
 {
     public int Id { get; set; }
     public string Username { get; set; }
