@@ -26,7 +26,7 @@ public class ChannelRepository : IChannelRepository
 
     public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(string userId)
     {
-        return await _dbSet.Where(channel => channel.CreatedBy == userId || channel.AdminIds.Contains(userId) || channel.MemberIds.Contains(userId)).ToListAsync();
+        return await _dbSet.Where(channel => channel.CreatedBy == userId || channel.AdminIds.Contains(userId) || channel.MemberIds.Contains(userId)).Include(c => c.ChannelMessages).AsNoTracking().ToListAsync();
     }
 
     public async Task<int> AddChannelAsync(ChatChannel newChannel)
