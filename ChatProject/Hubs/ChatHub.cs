@@ -63,7 +63,13 @@ public class ChatHub : Hub
         {
             await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
         }
+        
+        await base.OnConnectedAsync();
+    }
 
+    public async Task AfterConnectedAsync()
+    {
+        var userId = Context.UserIdentifier!;
         var userChannels = await _channelService.GetAllUserChannelsAsync(userId);
         var messageHistory = new Dictionary<int, List<ChatMessage>>();
         foreach (var channel in userChannels)
@@ -72,8 +78,6 @@ public class ChatHub : Hub
         }
 
         await Clients.Caller.SendAsync("ReceiveMessageHistory", messageHistory);
-        
-        await base.OnConnectedAsync();
     }
 
     // Handles disconnects for a user based on connection, removes user if all connections are disconnected
