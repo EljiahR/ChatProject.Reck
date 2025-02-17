@@ -108,7 +108,14 @@ public class UserController : ControllerBase
         {
             var userBo = await _userManager.GetUserAsync(User);
             var channelBos = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
-            return Ok(ModelConverter.UserBoToDto(userBo!, channelBos));
+            var friends = new List<ChatUser>();
+            foreach (var id in userBo.FriendIds)
+            {
+                var friend = await _userManager.FindByIdAsync(id);
+                if (friend != null) friends.Add(friend);
+            }
+            
+            return Ok(ModelConverter.UserBoToDto(userBo!, channelBos, friends));
         }
 
         return Unauthorized();
