@@ -15,7 +15,7 @@ public class ModelConverter
         };
     }
 
-    private static ChatChannelDto ChannelBoToDto(ChatChannel channel)
+    public static ChatChannelDto ChannelBoToDto(ChatChannel channel)
     {
         return new ChatChannelDto() { Id = channel.Id, Name = channel.Name };
     }

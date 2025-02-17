@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
 
 namespace ChatProject.Controllers;
@@ -104,21 +105,14 @@ public class UserController : ControllerBase
     [Route("Status")]
     public async Task<IActionResult> LoginStatus()
     {
-        if (User.Identity!.IsAuthenticated)
-        {
-            var userBo = await _userManager.GetUserAsync(User);
-            var channelBos = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
-            var friends = new List<ChatUser>();
-            foreach (var id in userBo.FriendIds)
-            {
-                var friend = await _userManager.FindByIdAsync(id);
-                if (friend != null) friends.Add(friend);
-            }
-            
-            return Ok(ModelConverter.UserBoToDto(userBo!, channelBos, friends));
-        }
-
-        return Unauthorized();
+        if (!User.Identity!.IsAuthenticated) return Unauthorized();
+        
+        var userBo = await _userManager.GetUserAsync(User);
+        var channelBos = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
+        var friends = await _userManager.Users.Where(user => userBo.FriendIds.Contains(user.Id)).ToListAsync();
+        
+        return Ok(ModelConverter.UserBoToDto(userBo!, channelBos, friends));
+        
     }
 
     [HttpPost]
