@@ -146,4 +146,22 @@ public class UserController : ControllerBase
             return BadRequest();
         }
     }
+
+    [HttpGet]
+    [Route("FindByName/{searchQuery}")]
+    public async Task<IActionResult> FindUsersByName(string searchQuery)
+    {
+        var client = await _userManager.GetUserAsync(User);
+        
+        var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
+            .Select(user => ModelConverter.ChatUserToPersonDto(user))
+            .ToListAsync();
+        
+        if (people.Count > 0)
+        {
+            return Ok(people);
+        }
+
+        return NotFound();
+    }
 }

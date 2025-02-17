@@ -1,6 +1,6 @@
 namespace ChatProject.Models;
 
-public class FriendDto
+public class PersonDto
 {
     public string? UserName { get; set; }
     public string? UserId { get; set; }
