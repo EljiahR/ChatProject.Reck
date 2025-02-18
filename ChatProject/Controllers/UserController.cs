@@ -154,7 +154,7 @@ public class UserController : ControllerBase
         var client = await _userManager.GetUserAsync(User);
         
         var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
-            .Select(user => ModelConverter.ChatUserToPersonDto(user))
+            .Select(user => ModelConverter.ChatUserToPersonDto(user, client.FriendIds.Contains(user.Id)))
             .ToListAsync();
         
         if (people.Count > 0)
@@ -167,18 +167,20 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Route("AddFriend")]
-    public async Task<IActionResult> AddFriend(string friendId)
+    public async Task<IActionResult> AddFriend([FromBody]NewFriendDto model)
     {
-        var newFriend = await _userManager.FindByIdAsync(friendId);
+        var newFriend = await _userManager.FindByIdAsync(model.Id);
         if (newFriend == null)
         {
-            return NotFound($"User with id ({friendId}) was not found.");
+            return NotFound($"User with id ({model.Id}) was not found.");
         }
         
         var user = await _userManager.GetUserAsync(User);
-        user!.FriendIds.Add(friendId);
+        user!.FriendIds.Add(model.Id);
+        newFriend.FriendIds.Add(user.Id);
         await _userManager.UpdateAsync(user);
+        await _userManager.UpdateAsync(newFriend);
 
-        return Ok(ModelConverter.ChatUserToPersonDto(newFriend));
+        return Ok(ModelConverter.ChatUserToPersonDto(newFriend, true));
     }
 }

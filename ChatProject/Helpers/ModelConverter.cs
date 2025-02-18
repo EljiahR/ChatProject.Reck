@@ -11,7 +11,7 @@ public class ModelConverter
         { 
             UserName = userBo.UserName, 
             Channels = channels.Select(channel => ChannelBoToDto(channel)).ToList(), 
-            Friends = friends.Select(user => ChatUserToPersonDto(user)).ToList()
+            Friends = friends.Select(user => ChatUserToPersonDto(user, true)).ToList()
         };
     }
 
@@ -20,8 +20,8 @@ public class ModelConverter
         return new ChatChannelDto() { Id = channel.Id, Name = channel.Name };
     }
 
-    public static PersonDto ChatUserToPersonDto(ChatUser user)
+    public static PersonDto ChatUserToPersonDto(ChatUser user, bool isFriend)
     {
-        return new PersonDto() { UserName = user.UserName, UserId = user.Id };
+        return new PersonDto() { UserName = user.UserName, UserId = user.Id, IsFriend = isFriend};
     }
 }
