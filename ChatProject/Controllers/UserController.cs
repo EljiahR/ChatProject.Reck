@@ -164,4 +164,21 @@ public class UserController : ControllerBase
 
         return NotFound();
     }
+
+    [HttpPost]
+    [Route("AddFriend")]
+    public async Task<IActionResult> AddFriend(string friendId)
+    {
+        var newFriend = await _userManager.FindByIdAsync(friendId);
+        if (newFriend == null)
+        {
+            return NotFound($"User with id ({friendId}) was not found.");
+        }
+        
+        var user = await _userManager.GetUserAsync(User);
+        user!.FriendIds.Add(friendId);
+        await _userManager.UpdateAsync(user);
+
+        return Ok(ModelConverter.ChatUserToPersonDto(newFriend));
+    }
 }
