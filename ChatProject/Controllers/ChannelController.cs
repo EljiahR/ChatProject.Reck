@@ -81,9 +81,18 @@ public class ChannelController : ControllerBase
         {
             return BadRequest("User already in channel.");
         }
-        
-        
-        
-        return NotFound("Not implemented");
+
+        try
+        {
+            await _channelService.AddMemberToChannelAsync(channelId, userId);
+            newChannelUser.ChannelIds.Add(channelId);
+            await _userManager.UpdateAsync(newChannelUser);
+
+            return Ok("User added to channel successfully!");
+        }
+        catch (Exception error)
+        {
+            return BadRequest("Error occured when adding user: " + error.Message);
+        }
     }
 }
