@@ -1,6 +1,5 @@
 using ChatProject.Helpers;
 using ChatProject.Hubs;
-using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
@@ -16,14 +15,14 @@ namespace ChatProject.Controllers;
 [ApiController]
 public class ChannelController : ControllerBase
 {
-    private readonly IChannelService _service;
+    private readonly IChannelService _channelService;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IHubContext<ChatHub> _hubContext;
     private readonly ConnectionManager _connectionManager;
 
-    public ChannelController(IChannelService service, UserManager<ChatUser> userManager, IHubContext<ChatHub> hubContext, ConnectionManager connectionManager)
+    public ChannelController(IChannelService channelService, UserManager<ChatUser> userManager, IHubContext<ChatHub> hubContext, ConnectionManager connectionManager)
     {
-        _service = service;
+        _channelService = channelService;
         _userManager = userManager;
         _hubContext = hubContext;
         _connectionManager = connectionManager;
@@ -36,7 +35,7 @@ public class ChannelController : ControllerBase
         var user = await _userManager.GetUserAsync(User);
         var newChannel = new ChatChannel { Name = model.Name, CreatedBy = user!.Id};
         
-        var newId = await _service.AddChannelAsync(newChannel);
+        var newId = await _channelService.AddChannelAsync(newChannel);
         user.ChannelIds.Add(newId);
         await _userManager.UpdateAsync(user);
         
@@ -55,13 +54,36 @@ public class ChannelController : ControllerBase
     [HttpGet]
     public async Task<IActionResult> GetAllChannels()
     {
-        return Ok(await _service.GetAllChannelsAsync());
+        return Ok(await _channelService.GetAllChannelsAsync());
     }
 
     [HttpPost]
     [Route("{channelId}/add/{userId}")]
     public async Task<IActionResult> AddUserToChannel(int channelId, string userId)
     {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized("User was not found.");
+        }
+
+        if (!user.ChannelIds.Contains(channelId))
+        {
+            return Unauthorized("User not a member of the channel.");
+        }
+
+        var newChannelUser = await _userManager.FindByIdAsync(userId);
+
+        if (newChannelUser == null)
+        {
+            return NotFound($"User with id '{userId}' was not found.");
+        } else if (newChannelUser.ChannelIds.Contains(channelId))
+        {
+            return BadRequest("User already in channel.");
+        }
+        
+        
+        
         return NotFound("Not implemented");
     }
 }

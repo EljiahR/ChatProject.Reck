@@ -37,4 +37,14 @@ public class ChannelService : IChannelService
     {
         await _repository.AddMessageToChannelAsync(id, chatMessage);
     }
+
+    public async Task AddMemberToChannelAsync(int channelId, string userId)
+    {
+        await _repository.AddMemberToChannelAsync(channelId, userId);
+    }
+
+    public async Task AddAdminToChannelAsync(int channelId, string userId)
+    {
+        await _repository.AddAdminToChannelAsync(channelId, userId);
+    }
 }

@@ -49,4 +49,24 @@ public class ChannelRepository : IChannelRepository
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task AddMemberToChannelAsync(int channelId, string userId)
+    {
+        var channel = await _dbSet.FirstOrDefaultAsync(x => x.Id == channelId);
+        if (channel != null)
+        {
+            channel.MemberIds.Add(userId);
+            await _context.SaveChangesAsync();
+        }
+    }
+    
+    public async Task AddAdminToChannelAsync(int channelId, string userId)
+    {
+        var channel = await _dbSet.FirstOrDefaultAsync(x => x.Id == channelId);
+        if (channel != null)
+        {
+            channel.AdminIds.Add(userId);
+            await _context.SaveChangesAsync();
+        }
+    }
 }
