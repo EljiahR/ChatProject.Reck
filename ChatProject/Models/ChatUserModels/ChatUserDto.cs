@@ -1,4 +1,6 @@
-namespace ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
+
+namespace ChatProject.Models.ChatUserModels;
 
 public class ChatUserDto
 {

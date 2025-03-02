@@ -1,6 +1,8 @@
 using ChatProject.Helpers;
 using ChatProject.Hubs;
 using ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
+using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;

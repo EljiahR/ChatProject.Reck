@@ -1,4 +1,4 @@
-namespace ChatProject.Models;
+namespace ChatProject.Models.ChatChannelModels;
 
 public class NewChannelDto
 {

@@ -1,7 +1,6 @@
 using Microsoft.AspNetCore.Identity;
-using Microsoft.Build.Framework;
 
-namespace ChatProject.Models;
+namespace ChatProject.Models.ChatUserModels;
 
 public class ChatUser : IdentityUser
 {

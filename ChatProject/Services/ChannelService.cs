@@ -1,4 +1,5 @@
 using ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
 using ChatProject.Repositories;
 
 namespace ChatProject.Services;

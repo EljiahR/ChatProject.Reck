@@ -1,5 +1,6 @@
 using ChatProject.Data;
 using ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatProject.Repositories;

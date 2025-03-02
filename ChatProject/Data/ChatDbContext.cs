@@ -1,4 +1,6 @@
 using ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
+using ChatProject.Models.ChatUserModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 
