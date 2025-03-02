@@ -57,4 +57,11 @@ public class ChannelController : ControllerBase
     {
         return Ok(await _service.GetAllChannelsAsync());
     }
+
+    [HttpPost]
+    [Route("{channelId}/add/{userId}")]
+    public async Task<IActionResult> AddUserToChannel(int channelId, string userId)
+    {
+        return NotFound("Not implemented");
+    }
 }

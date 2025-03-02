@@ -1,4 +1,3 @@
-using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 
@@ -11,7 +10,7 @@ public class ModelConverter
         
         return new ChatUserDto() 
         { 
-            UserName = userBo.UserName, 
+            UserName = userBo.UserName!, 
             Channels = channels.Select(channel => ChannelBoToDto(channel)).ToList(), 
             Friends = friends.Select(user => ChatUserToPersonDto(user, true)).ToList()
         };
