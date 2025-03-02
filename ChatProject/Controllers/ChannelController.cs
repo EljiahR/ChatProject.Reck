@@ -88,6 +88,12 @@ public class ChannelController : ControllerBase
             newChannelUser.ChannelIds.Add(channelId);
             await _userManager.UpdateAsync(newChannelUser);
 
+            var connectionIds = _connectionManager.GetConnections(userId);
+            foreach (var connectionId in connectionIds)
+            {
+                await _hubContext.Groups.AddToGroupAsync(connectionId, channelId.ToString());
+            }
+
             return Ok("User added to channel successfully!");
         }
         catch (Exception error)
