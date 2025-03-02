@@ -18,11 +18,11 @@ public class ModelConverter
 
     public static ChatChannelDto ChannelBoToDto(ChatChannel channel)
     {
-        return new ChatChannelDto() { Id = channel.Id, Name = channel.Name };
+        return new ChatChannelDto { Id = channel.Id, Name = channel.Name};
     }
 
     public static PersonDto ChatUserToPersonDto(ChatUser user, bool isFriend)
     {
-        return new PersonDto() { UserName = user.UserName, UserId = user.Id, IsFriend = isFriend};
+        return new PersonDto { UserName = user.UserName, UserId = user.Id, IsFriend = isFriend};
     }
 }

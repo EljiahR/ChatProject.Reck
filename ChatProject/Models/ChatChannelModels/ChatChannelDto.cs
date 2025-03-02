@@ -1,7 +1,12 @@
+using ChatProject.Models.ChatUserModels;
+
 namespace ChatProject.Models.ChatChannelModels;
 
 public class ChatChannelDto
 {
     public int Id { get; set; }
     public string Name { get; set; }
+    public PersonDto Owner { get; set; }
+    public List<PersonDto> Admins { get; set; } = new();
+    public List<PersonDto> Members { get; set; } = new();
 }
