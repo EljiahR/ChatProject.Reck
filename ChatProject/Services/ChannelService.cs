@@ -22,7 +22,7 @@ public class ChannelService : IChannelService
         return await _repository.GetAllChannelsAsync();
     }
 
-    public async Task<IEnumerable<ChatChannel>> GetAllUserChannelsAsync(string userId)
+    public async Task<IEnumerable<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
     {
         return await _repository.GetAllUserChannelsAsync(userId);
     }
