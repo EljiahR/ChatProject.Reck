@@ -109,10 +109,10 @@ public class UserController : ControllerBase
         if (!User.Identity!.IsAuthenticated) return Unauthorized();
         
         var userBo = await _userManager.GetUserAsync(User);
-        var channelBos = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
+        var channels = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
         var friends = await _userManager.Users.Where(user => userBo.FriendIds.Contains(user.Id)).ToListAsync();
         
-        return Ok(ModelConverter.UserBoToDto(userBo!, channelBos, friends));
+        return Ok(ModelConverter.UserBoToDto(userBo!, channels, friends));
         
     }
 
@@ -155,7 +155,7 @@ public class UserController : ControllerBase
         var client = await _userManager.GetUserAsync(User);
         
         var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
-            .Select(user => ModelConverter.ChatUserToPersonDto(user, client.FriendIds.Contains(user.Id)))
+            .Select(user => ModelConverter.ChatUserToPersonDto(user))
             .ToListAsync();
         
         if (people.Count > 0)
@@ -182,6 +182,6 @@ public class UserController : ControllerBase
         await _userManager.UpdateAsync(user);
         await _userManager.UpdateAsync(newFriend);
 
-        return Ok(ModelConverter.ChatUserToPersonDto(newFriend, true));
+        return Ok(ModelConverter.ChatUserToPersonDto(newFriend));
     }
 }

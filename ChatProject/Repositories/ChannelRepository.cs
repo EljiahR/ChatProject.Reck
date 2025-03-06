@@ -29,7 +29,26 @@ public class ChannelRepository : IChannelRepository
         return await _dbSet.Include(c => c.ChannelMessages).AsNoTracking().ToListAsync();
     }
 
-    public async Task<IEnumerable<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
+    public async Task<List<int>> GetAllUserChannelIdsAsync(string userId)
+    {
+        var user = await _users
+            .Include(u => u.AdministeredChannels)
+            .Include(u => u.MemberChannels)
+            .Include(u => u.CreatedChannels)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+
+        if (user == null) return new List<int>();
+
+        return user.MemberChannels
+            .Concat(user.AdministeredChannels)
+            .Concat(user.CreatedChannels)
+            .Distinct()
+            .Select(c => c.Id)
+            .ToList();
+    }
+
+
+    public async Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
     {
         var user = await _users
             .Include(u => u.AdministeredChannels)

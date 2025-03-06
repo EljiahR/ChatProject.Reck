@@ -33,10 +33,9 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> CreateChannel([FromBody] NewChannelDto model)
     {
         var user = await _userManager.GetUserAsync(User);
-        var newChannel = new ChatChannel { Name = model.Name, CreatedBy = user!.Id};
+        var newChannel = new ChatChannel { Name = model.Name, CreatedById = user!.Id};
         
         var newId = await _channelService.AddChannelAsync(newChannel);
-        user.ChannelIds.Add(newId);
         await _userManager.UpdateAsync(user);
         
         // Updating connection manager so user can use the new channel
@@ -66,8 +65,8 @@ public class ChannelController : ControllerBase
         {
             return Unauthorized("User was not found.");
         }
-
-        if (!user.ChannelIds.Contains(channelId))
+        
+        if (!user.CreatedChannels.Concat(user.AdministeredChannels).Concat(user.MemberChannels).Any(c => c.CreatedBy == user || c.Admins.Contains(user) || c.Members.Contains(user)))
         {
             return Unauthorized("User not a member of the channel.");
         }
@@ -77,7 +76,7 @@ public class ChannelController : ControllerBase
         if (newChannelUser == null)
         {
             return NotFound($"User with id '{userId}' was not found.");
-        } else if (newChannelUser.ChannelIds.Contains(channelId))
+        } else if (newChannelUser.MemberChannels.Concat(newChannelUser.AdministeredChannels).Concat(newChannelUser.CreatedChannels).Any(c => c.Id == channelId))
         {
             return BadRequest("User already in channel.");
         }
@@ -85,9 +84,6 @@ public class ChannelController : ControllerBase
         try
         {
             await _channelService.AddMemberToChannelAsync(channelId, userId);
-            newChannelUser.ChannelIds.Add(channelId);
-            await _userManager.UpdateAsync(newChannelUser);
-
             var connectionIds = _connectionManager.GetConnections(userId);
             foreach (var connectionId in connectionIds)
             {

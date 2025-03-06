@@ -5,13 +5,13 @@ namespace ChatProject.Helpers;
 
 public class ModelConverter
 {
-    public static ChatUserDto UserBoToDto(ChatUser userBo, IEnumerable<ChatChannel> channels, IEnumerable<ChatUser> friends)
+    public static ChatUserDto UserBoToDto(ChatUser userBo, List<ChatChannelDto> channels, IEnumerable<ChatUser> friends)
     {
         
         return new ChatUserDto() 
         { 
             UserName = userBo.UserName!, 
-            Channels = channels.Select(channel => ChannelBoToDto(channel)).ToList(), 
+            Channels = channels, 
             Friends = friends.Select(user => ChatUserToPersonDto(user)).ToList()
         };
     }
@@ -24,8 +24,8 @@ public class ModelConverter
             Name = channel.Name, 
             Admins = channel.Admins.Select(ChatUserToPersonDto).ToList(),
             Members = channel.Members.Select(ChatUserToPersonDto).ToList(),
-            Owner = ChatUserToPersonDto(channel.CreatedBy)
-
+            Owner = ChatUserToPersonDto(channel.CreatedBy),
+            ChannelMessages = channel.ChannelMessages
         };
     }
 

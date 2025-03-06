@@ -51,8 +51,8 @@ public class ChatHub : Hub
         List<int> channelIds;
         if (_connectionManager.GetConnections(userId).Count == 1)
         {
-            var user = await _userManager.GetUserAsync(Context.User!);
-            channelIds = user!.ChannelIds;
+
+            channelIds = await _channelService.GetAllUserChannelIdsAsync(userId);
             _connectionManager.AddChannels(userId, channelIds);
         }
         else

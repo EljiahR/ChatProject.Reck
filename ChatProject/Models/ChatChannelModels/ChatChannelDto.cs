@@ -9,4 +9,5 @@ public class ChatChannelDto
     public PersonDto Owner { get; set; }
     public List<PersonDto> Admins { get; set; } = new();
     public List<PersonDto> Members { get; set; } = new();
+    public ICollection<ChatMessage> ChannelMessages { get; set; } = new List<ChatMessage>();
 }
