@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ChatProject.Helpers;
 using ChatProject.Hubs;
 using ChatProject.Models.ChatChannelModels;
@@ -16,13 +17,15 @@ namespace ChatProject.Controllers;
 public class ChannelController : ControllerBase
 {
     private readonly IChannelService _channelService;
+    private readonly IChatUserService _userService;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IHubContext<ChatHub> _hubContext;
     private readonly ConnectionManager _connectionManager;
 
-    public ChannelController(IChannelService channelService, UserManager<ChatUser> userManager, IHubContext<ChatHub> hubContext, ConnectionManager connectionManager)
+    public ChannelController(IChannelService channelService, IChatUserService userService, UserManager<ChatUser> userManager, IHubContext<ChatHub> hubContext, ConnectionManager connectionManager)
     {
         _channelService = channelService;
+        _userService = userService;
         _userManager = userManager;
         _hubContext = hubContext;
         _connectionManager = connectionManager;
@@ -60,7 +63,8 @@ public class ChannelController : ControllerBase
     [Route("{channelId}/add/{userId}")]
     public async Task<IActionResult> AddUserToChannel(int channelId, string userId)
     {
-        var user = await _userManager.GetUserAsync(User);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
         if (user == null)
         {
             return Unauthorized("User was not found.");
@@ -71,7 +75,7 @@ public class ChannelController : ControllerBase
             return Unauthorized("User not a member of the channel.");
         }
 
-        var newChannelUser = await _userManager.FindByIdAsync(userId);
+        var newChannelUser = await _userService.GetUserWithChannelsByIdAsync(userId);
 
         if (newChannelUser == null)
         {

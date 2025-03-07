@@ -24,7 +24,7 @@ public class ChannelRepository : IChannelRepository
     {
         return await _dbSet.FindAsync(id);
     }
-    public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync()
+    public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
         return await _dbSet
             .Include(c => c.ChannelMessages)
@@ -32,6 +32,7 @@ public class ChannelRepository : IChannelRepository
             .Include(c => c.Admins)
             .Include(c => c.Members)
             .AsNoTracking()
+            .Select(c => ModelConverter.ChannelBoToDto(c))
             .ToListAsync();
     }
 
