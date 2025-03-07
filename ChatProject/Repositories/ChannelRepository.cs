@@ -59,8 +59,11 @@ public class ChannelRepository : IChannelRepository
     {
         var user = await _users
             .Include(u => u.AdministeredChannels)
+                .ThenInclude(c => c.ChannelMessages)
             .Include(u => u.MemberChannels)
+                .ThenInclude(c => c.ChannelMessages)
             .Include(u => u.CreatedChannels)
+                .ThenInclude(c => c.ChannelMessages)
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         if (user == null) return new List<ChatChannelDto>();
