@@ -26,7 +26,13 @@ public class ChannelRepository : IChannelRepository
     }
     public async Task<IEnumerable<ChatChannel>> GetAllChannelsAsync()
     {
-        return await _dbSet.Include(c => c.ChannelMessages).AsNoTracking().ToListAsync();
+        return await _dbSet
+            .Include(c => c.ChannelMessages)
+            .Include(c => c.CreatedBy)
+            .Include(c => c.Admins)
+            .Include(c => c.Members)
+            .AsNoTracking()
+            .ToListAsync();
     }
 
     public async Task<List<int>> GetAllUserChannelIdsAsync(string userId)
