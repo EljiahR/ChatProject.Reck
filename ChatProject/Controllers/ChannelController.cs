@@ -50,7 +50,7 @@ public class ChannelController : ControllerBase
             await _hubContext.Groups.AddToGroupAsync(connectionId, newChannel.Id.ToString());
         }
         
-        return Ok(ModelConverter.ChannelBoToDto(newChannel));
+        return Ok(ModelConverter.MapChannelToDto(newChannel));
     }
 
     [HttpGet]

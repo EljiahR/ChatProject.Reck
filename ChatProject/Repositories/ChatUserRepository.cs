@@ -18,9 +18,8 @@ public class ChatUserRepository : IChatUserRepository
     public async Task<ChatUser?> GetUserWithChannelsByIdAsync(string userId)
     {
         return await _dbSet
-            .Include(u => u.CreatedChannels)
-            .Include(u => u.AdministeredChannels)
-            .Include(u => u.MemberChannels)
+            .Include(u => u.ChannelUsers)
+                .ThenInclude(cu => cu.Channel)
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 

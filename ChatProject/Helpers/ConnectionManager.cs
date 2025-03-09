@@ -7,7 +7,7 @@ namespace ChatProject.Helpers;
 public class ConnectionManager
 {
     private readonly ConcurrentDictionary<string, HashSet<string>> _userConnections = new();
-    private readonly ConcurrentDictionary<string, HashSet<int>> _userChannels = new();
+    private readonly ConcurrentDictionary<string, HashSet<string>> _userChannels = new();
     
     public void AddConnection(string userId, string connectionId)
     {
@@ -21,10 +21,10 @@ public class ConnectionManager
         );
     }
     
-    public void AddChannel(string userId, int channelId)
+    public void AddChannel(string userId, string channelId)
     {
         _userChannels.AddOrUpdate(userId, 
-            _ => new HashSet<int>() {channelId},
+            _ => new HashSet<string>() {channelId},
             (_, channels) =>
             {
                 channels.Add(channelId);
@@ -33,7 +33,7 @@ public class ConnectionManager
         );
     }
     
-    public void AddChannels(string userId, List<int> channelIds)
+    public void AddChannels(string userId, List<string> channelIds)
     {
         _userChannels.AddOrUpdate(userId, 
             _ => channelIds.ToHashSet(),
@@ -58,7 +58,7 @@ public class ConnectionManager
         }
     }
     
-    public void RemoveChannel(string userId, int channelId)
+    public void RemoveChannel(string userId, string channelId)
     {
         if (_userChannels.TryGetValue(userId!, out var channels))
         {
@@ -66,7 +66,7 @@ public class ConnectionManager
         }
     }
 
-    public List<int> GetChannels(string userId)
+    public List<string> GetChannels(string userId)
     {
         return _userChannels[userId].ToList();
     }
@@ -76,7 +76,7 @@ public class ConnectionManager
         return _userConnections.TryGetValue(userId, out var connections) ? connections.ToList() : new List<string>();
     }
 
-    public bool IsInChannel(string userId, int channelId)
+    public bool IsInChannel(string userId, string channelId)
     {
         return _userChannels.TryGetValue(userId!, out var channels) && channels.Contains(channelId);
     }
