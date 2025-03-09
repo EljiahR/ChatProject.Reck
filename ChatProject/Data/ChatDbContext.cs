@@ -21,10 +21,16 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
     {
         builder.Entity<ChannelUser>()
             .HasKey(cu => new { cu.UserId, cu.ChannelId });
-        
+
         builder.Entity<ChannelUser>()
             .HasOne(cu => cu.User)
-            .WithMany(u => )
+            .WithMany(u => u.ChannelUsers)
+            .HasForeignKey(u => u.UserId);
+
+        builder.Entity<ChannelUser>()
+            .HasOne(cu => cu.Channel)
+            .WithMany(c => c.ChannelUsers)
+            .HasForeignKey(cu => cu.ChannelId);
         
         // Many-to-one: ChatMessage
         builder.Entity<ChatChannel>()
