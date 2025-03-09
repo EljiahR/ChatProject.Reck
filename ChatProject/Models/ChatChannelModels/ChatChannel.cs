@@ -1,10 +1,12 @@
+using System.ComponentModel.DataAnnotations;
 using ChatProject.Models.ChatUserModels;
 
 namespace ChatProject.Models.ChatChannelModels;
 
 public class ChatChannel
 {
-    public int Id { get; set; }
+    [MaxLength(50)]
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     public string Name { get; set; }
     public ChatUser CreatedBy { get; set; }
     public string CreatedById { get; set; }

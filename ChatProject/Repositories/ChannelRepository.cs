@@ -58,22 +58,11 @@ public class ChannelRepository : IChannelRepository
     public async Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
     {
         var user = await _users
-            .Include(u => u.AdministeredChannels)
-                .ThenInclude(c => c.ChannelMessages)
-            .Include(u => u.MemberChannels)
-                .ThenInclude(c => c.ChannelMessages)
+            .Where(u => u.Id == userId)
             .Include(u => u.CreatedChannels)
-                .ThenInclude(c => c.ChannelMessages)
-            .FirstOrDefaultAsync(u => u.Id == userId);
+            .ThenInclude(c => c.)
 
-        if (user == null) return new List<ChatChannelDto>();
-
-        return user.MemberChannels
-            .Concat(user.AdministeredChannels)
-            .Concat(user.CreatedChannels)
-            .Distinct()
-            .Select(ModelConverter.ChannelBoToDto)
-            .ToList();
+        return channels;
     }
 
     public async Task<int> AddChannelAsync(ChatChannel newChannel)
