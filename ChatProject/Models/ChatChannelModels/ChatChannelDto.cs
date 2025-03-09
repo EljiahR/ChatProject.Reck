@@ -4,7 +4,7 @@ namespace ChatProject.Models.ChatChannelModels;
 
 public class ChatChannelDto
 {
-    public int Id { get; set; }
+    public string Id { get; set; }
     public string Name { get; set; }
     public PersonDto Owner { get; set; }
     public List<PersonDto> Admins { get; set; } = new();

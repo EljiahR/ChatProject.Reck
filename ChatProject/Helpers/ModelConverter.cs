@@ -1,35 +1,36 @@
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 
 namespace ChatProject.Helpers;
 
 public class ModelConverter
 {
-    public static ChatUserDto UserBoToDto(ChatUser userBo, List<ChatChannelDto> channels, IEnumerable<ChatUser> friends)
+    public static ChatUserDto MapChatUserToDto(ChatUser userBo, List<ChatChannelDto> channels, IEnumerable<ChatUser> friends)
     {
         
         return new ChatUserDto() 
         { 
             UserName = userBo.UserName!, 
             Channels = channels, 
-            Friends = friends.Select(user => ChatUserToPersonDto(user)).ToList()
+            Friends = friends.Select(MapChatUserToPersonDto).ToList()
         };
     }
 
-    public static ChatChannelDto ChannelBoToDto(ChatChannel channel)
+    public static ChatChannelDto MapChannelToDto(ChatChannel channel)
     {
         return new ChatChannelDto
         {
             Id = channel.Id, 
             Name = channel.Name, 
-            Admins = channel.Admins.Select(ChatUserToPersonDto).ToList(),
-            Members = channel.Members.Select(ChatUserToPersonDto).ToList(),
-            Owner = ChatUserToPersonDto(channel.CreatedBy),
+            Admins = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Admin).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
+            Members = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Member).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
+            Owner = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Creator).Select(cu => MapChatUserToPersonDto(cu.User)).FirstOrDefault()!,
             ChannelMessages = channel.ChannelMessages
         };
     }
 
-    public static PersonDto ChatUserToPersonDto(ChatUser user)
+    public static PersonDto MapChatUserToPersonDto(ChatUser user)
     {
         return new PersonDto { UserName = user.UserName, UserId = user.Id};
     }

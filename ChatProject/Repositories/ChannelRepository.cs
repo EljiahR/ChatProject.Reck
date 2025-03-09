@@ -3,6 +3,7 @@ using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 using Microsoft.EntityFrameworkCore;
 
 namespace ChatProject.Repositories;
@@ -12,12 +13,14 @@ public class ChannelRepository : IChannelRepository
     private readonly DbContext _context;
     private readonly DbSet<ChatChannel> _dbSet;
     private readonly DbSet<ChatUser> _users;
+    private readonly DbSet<ChannelUser> _channelUsers;
 
     public ChannelRepository(ChatDbContext context)
     {
         _context = context;
         _dbSet = _context.Set<ChatChannel>();
         _users = _context.Set<ChatUser>();
+        _channelUsers = _context.Set<ChannelUser>();
     }
 
     public async Task<ChatChannel?> GetChannelByIdAsync(int id)
@@ -28,51 +31,45 @@ public class ChannelRepository : IChannelRepository
     {
         return await _dbSet
             .Include(c => c.ChannelMessages)
-            .Include(c => c.CreatedBy)
-            .Include(c => c.Admins)
-            .Include(c => c.Members)
+            .Include(c => c.ChannelUsers)
+            .ThenInclude(cu => cu.User)
             .AsNoTracking()
-            .Select(c => ModelConverter.ChannelBoToDto(c))
+            .Select(c => ModelConverter.MapChannelToDto(c))
             .ToListAsync();
     }
 
-    public async Task<List<int>> GetAllUserChannelIdsAsync(string userId)
+    public async Task<List<string>> GetAllUserChannelIdsAsync(string userId)
     {
         var user = await _users
-            .Include(u => u.AdministeredChannels)
-            .Include(u => u.MemberChannels)
-            .Include(u => u.CreatedChannels)
-            .FirstOrDefaultAsync(u => u.Id == userId);
-
-        if (user == null) return new List<int>();
-
-        return user.MemberChannels
-            .Concat(user.AdministeredChannels)
-            .Concat(user.CreatedChannels)
-            .Distinct()
-            .Select(c => c.Id)
-            .ToList();
+            .Include(u => u.ChannelUsers)
+            .ThenInclude(cu => cu.ChannelId)
+            .FirstOrDefaultAsync();
+        
+        return user != null ? user.ChannelUsers.Select(cu => cu.ChannelId).ToList() : [];
+        
     }
 
 
     public async Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
     {
-        var user = await _users
-            .Where(u => u.Id == userId)
-            .Include(u => u.CreatedChannels)
-            .ThenInclude(c => c.)
+        var channels = await _dbSet
+            .Where(c => c.ChannelUsers.Any(cu => cu.UserId == userId))
+            .Include(c => c.ChannelUsers)
+            .ThenInclude(cu => cu.User)
+            .Include(c => c.ChannelMessages)
+            .ToListAsync();
 
-        return channels;
+        return channels.Select(ModelConverter.MapChannelToDto).ToList();
     }
 
-    public async Task<int> AddChannelAsync(ChatChannel newChannel)
+    public async Task<string> AddChannelAsync(ChatChannel newChannel)
     {
         await _dbSet.AddAsync(newChannel);
         await _context.SaveChangesAsync();
         return newChannel.Id;
     }
 
-    public async Task AddMessageToChannelAsync(int id, ChatMessage chatMessage)
+    public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
     {
         var channel = await _dbSet
             .Include(c => c.ChannelMessages)
@@ -85,19 +82,9 @@ public class ChannelRepository : IChannelRepository
         }
     }
 
-    public async Task AddMemberToChannelAsync(int channelId, string userId)
+    public async Task AddMemberToChannelAsync(string channelId, string userId)
     {
-        var channel = await _dbSet.Include(c => c.Members).FirstOrDefaultAsync(x => x.Id == channelId);
-        if (channel != null)
-        {
-            var user = await _users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user != null)
-            {
-                channel.Members.Add(user);
-                await _context.SaveChangesAsync();
-            }
-            
-        }
+        var entry = 
     }
     
     public async Task AddAdminToChannelAsync(int channelId, string userId)
