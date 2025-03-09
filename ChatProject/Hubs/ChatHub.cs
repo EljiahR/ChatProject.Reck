@@ -24,7 +24,7 @@ public class ChatHub : Hub
         _connectionManager = connectionManager;
     }
     
-    public async Task SendMessage(string content, int channelId)
+    public async Task SendMessage(string content, string channelId)
     {
         var userId = Context.UserIdentifier;
         if (!_connectionManager.IsInChannel(userId!, channelId))
