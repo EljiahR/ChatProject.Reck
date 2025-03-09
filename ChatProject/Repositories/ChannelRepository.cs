@@ -23,7 +23,7 @@ public class ChannelRepository : IChannelRepository
         _channelUsers = _context.Set<ChannelUser>();
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(int id)
+    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
     {
         return await _dbSet.FindAsync(id);
     }
@@ -84,21 +84,35 @@ public class ChannelRepository : IChannelRepository
 
     public async Task AddMemberToChannelAsync(string channelId, string userId)
     {
-        var entry = 
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        if (entry == null)
+        {
+            var newEntry = new ChannelUser
+            {
+                ChannelId = channelId,
+                UserId = userId,
+                Role = ChannelRole.Member
+            };
+
+            _channelUsers.Add(newEntry);
+            await _context.SaveChangesAsync();
+        }
     }
     
-    public async Task AddAdminToChannelAsync(int channelId, string userId)
+    public async Task AddAdminToChannelAsync(string channelId, string userId)
     {
-        var channel = await _dbSet.Include(c => c.Members).FirstOrDefaultAsync(x => x.Id == channelId);
-        if (channel != null)
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        if (entry == null || entry.Role != ChannelRole.Admin)
         {
-            var user = await _users.FirstOrDefaultAsync(u => u.Id == userId);
-            if (user != null)
+            var newEntry = new ChannelUser
             {
-                channel.Admins.Add(user);
-                await _context.SaveChangesAsync();
-            }
-            
+                ChannelId = channelId,
+                UserId = userId,
+                Role = ChannelRole.Admin
+            };
+
+            _channelUsers.Add(newEntry);
+            await _context.SaveChangesAsync();
         }
     }
 }
