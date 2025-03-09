@@ -1,5 +1,4 @@
 using System.ComponentModel.DataAnnotations;
-using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
 
 namespace ChatProject.Models.ChatChannelModels;

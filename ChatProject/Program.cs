@@ -1,7 +1,6 @@
 using ChatProject.Data;
 using ChatProject.Helpers;
 using ChatProject.Hubs;
-using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Repositories;
 using ChatProject.Services;

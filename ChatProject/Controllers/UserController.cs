@@ -1,16 +1,10 @@
-using System.IdentityModel.Tokens.Jwt;
-using System.Security.Claims;
-using System.Text;
 using ChatProject.Helpers;
-using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Http.HttpResults;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 
 namespace ChatProject.Controllers;
 
@@ -112,7 +106,7 @@ public class UserController : ControllerBase
         var channels = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
         var friends = await _userManager.Users.Where(user => userBo.FriendIds.Contains(user.Id)).ToListAsync();
         
-        return Ok(ModelConverter.UserBoToDto(userBo!, channels, friends));
+        return Ok(ModelConverter.MapChatUserToDto(userBo!, channels, friends));
         
     }
 
@@ -155,7 +149,7 @@ public class UserController : ControllerBase
         var client = await _userManager.GetUserAsync(User);
         
         var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
-            .Select(user => ModelConverter.ChatUserToPersonDto(user))
+            .Select(user => ModelConverter.MapChatUserToPersonDto(user))
             .ToListAsync();
         
         if (people.Count > 0)
@@ -182,6 +176,6 @@ public class UserController : ControllerBase
         await _userManager.UpdateAsync(user);
         await _userManager.UpdateAsync(newFriend);
 
-        return Ok(ModelConverter.ChatUserToPersonDto(newFriend));
+        return Ok(ModelConverter.MapChatUserToPersonDto(newFriend));
     }
 }

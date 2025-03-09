@@ -1,4 +1,3 @@
-using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.JoinModels;
 using Microsoft.AspNetCore.Identity;
 
