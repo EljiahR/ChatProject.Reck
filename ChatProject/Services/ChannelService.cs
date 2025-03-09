@@ -13,7 +13,7 @@ public class ChannelService : IChannelService
         _repository = repository;
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(int id)
+    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
     {
         return await _repository.GetChannelByIdAsync(id);
     }
@@ -22,7 +22,7 @@ public class ChannelService : IChannelService
         return await _repository.GetAllChannelsAsync();
     }
 
-    public async Task<List<int>> GetAllUserChannelIdsAsync(string userId)
+    public async Task<List<string>> GetAllUserChannelIdsAsync(string userId)
     {
         return await _repository.GetAllUserChannelIdsAsync(userId);
     }
@@ -33,23 +33,23 @@ public class ChannelService : IChannelService
         return await _repository.GetAllUserChannelsAsync(userId);
     }
 
-    public async Task<int> AddChannelAsync(ChatChannel newChannel)
+    public async Task<string> AddChannelAsync(ChatChannel newChannel)
     {
         await _repository.AddChannelAsync(newChannel);
         return newChannel.Id;
     }
 
-    public async Task AddMessageToChannelAsync(int id, ChatMessage chatMessage)
+    public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
     {
         await _repository.AddMessageToChannelAsync(id, chatMessage);
     }
 
-    public async Task AddMemberToChannelAsync(int channelId, string userId)
+    public async Task AddMemberToChannelAsync(string channelId, string userId)
     {
         await _repository.AddMemberToChannelAsync(channelId, userId);
     }
 
-    public async Task AddAdminToChannelAsync(int channelId, string userId)
+    public async Task AddAdminToChannelAsync(string channelId, string userId)
     {
         await _repository.AddAdminToChannelAsync(channelId, userId);
     }
