@@ -48,7 +48,7 @@ public class ChatHub : Hub
         var connectionId = Context.ConnectionId;
 
         _connectionManager.AddConnection(userId, connectionId);
-        List<int> channelIds;
+        List<string> channelIds;
         if (_connectionManager.GetConnections(userId).Count == 1)
         {
 
@@ -72,7 +72,7 @@ public class ChatHub : Hub
     {
         var userId = Context.UserIdentifier!;
         var userChannels = await _channelService.GetAllUserChannelsAsync(userId);
-        var messageHistory = new Dictionary<int, List<ChatMessage>>();
+        var messageHistory = new Dictionary<string, List<ChatMessage>>();
         foreach (var channel in userChannels)
         {
             messageHistory[channel.Id] = channel.ChannelMessages.ToList();
