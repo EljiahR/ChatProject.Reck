@@ -69,7 +69,7 @@ public class ChannelController : ControllerBase
             return Unauthorized("User was not found.");
         }
         
-        if (user.ChannelUsers.Any(cu => cu.ChannelId == channelId))
+        if (user.ChannelUsers.All(cu => cu.ChannelId != channelId))
         {
             return Unauthorized("User not a member of the channel.");
         }
