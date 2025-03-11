@@ -11,6 +11,7 @@ public class ModelConverter
         
         return new ChatUserDto() 
         { 
+            Id = userBo.Id,
             UserName = userBo.UserName!, 
             Channels = channels, 
             Friends = friends.Select(MapChatUserToPersonDto).ToList()

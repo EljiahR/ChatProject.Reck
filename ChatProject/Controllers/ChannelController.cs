@@ -46,7 +46,7 @@ public class ChannelController : ControllerBase
         var connectionIds = _connectionManager.GetConnections(user.Id);
         foreach (var connectionId in connectionIds)
         {
-            await _hubContext.Groups.AddToGroupAsync(connectionId, newChannel.Id.ToString());
+            await _hubContext.Groups.AddToGroupAsync(connectionId, newChannel.Id);
         }
         
         return Ok(newChannel);
