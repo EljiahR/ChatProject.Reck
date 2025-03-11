@@ -36,13 +36,12 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> CreateChannel([FromBody] NewChannelDto model)
     {
         var user = await _userManager.GetUserAsync(User);
-        var newChannel = new ChatChannel { Name = model.Name, CreatedById = user!.Id};
         
-        var newId = await _channelService.AddChannelAsync(newChannel);
+        var newChannel = await _channelService.AddChannelAsync(user!.Id, model.Name);
         await _userManager.UpdateAsync(user);
         
         // Updating connection manager so user can use the new channel
-        _connectionManager.AddChannel(user.Id, newId);
+        _connectionManager.AddChannel(user.Id, newChannel.Id);
 
         var connectionIds = _connectionManager.GetConnections(user.Id);
         foreach (var connectionId in connectionIds)
@@ -50,7 +49,7 @@ public class ChannelController : ControllerBase
             await _hubContext.Groups.AddToGroupAsync(connectionId, newChannel.Id.ToString());
         }
         
-        return Ok(ModelConverter.MapChannelToDto(newChannel));
+        return Ok(newChannel);
     }
 
     [HttpGet]
@@ -61,7 +60,7 @@ public class ChannelController : ControllerBase
 
     [HttpPost]
     [Route("{channelId}/add/{userId}")]
-    public async Task<IActionResult> AddUserToChannel(int channelId, string userId)
+    public async Task<IActionResult> AddUserToChannel(string channelId, string userId)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
@@ -70,7 +69,7 @@ public class ChannelController : ControllerBase
             return Unauthorized("User was not found.");
         }
         
-        if (!user.CreatedChannels.Concat(user.AdministeredChannels).Concat(user.MemberChannels).Any(c => c.CreatedBy == user || c.Admins.Contains(user) || c.Members.Contains(user)))
+        if (user.ChannelUsers.Any(cu => cu.ChannelId == channelId))
         {
             return Unauthorized("User not a member of the channel.");
         }
@@ -80,7 +79,9 @@ public class ChannelController : ControllerBase
         if (newChannelUser == null)
         {
             return NotFound($"User with id '{userId}' was not found.");
-        } else if (newChannelUser.MemberChannels.Concat(newChannelUser.AdministeredChannels).Concat(newChannelUser.CreatedChannels).Any(c => c.Id == channelId))
+        }
+        
+        if (newChannelUser.ChannelUsers.Any(cu => cu.ChannelId == channelId))
         {
             return BadRequest("User already in channel.");
         }
@@ -91,7 +92,7 @@ public class ChannelController : ControllerBase
             var connectionIds = _connectionManager.GetConnections(userId);
             foreach (var connectionId in connectionIds)
             {
-                await _hubContext.Groups.AddToGroupAsync(connectionId, channelId.ToString());
+                await _hubContext.Groups.AddToGroupAsync(connectionId, channelId);
             }
 
             return Ok("User added to channel successfully!");
