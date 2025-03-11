@@ -9,7 +9,7 @@ public interface IChannelService
     Task<List<ChatChannelDto>> GetAllChannelsAsync();
     Task<List<string>> GetAllUserChannelIdsAsync(string userId);
     Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId);
-    Task<string> AddChannelAsync(ChatChannel newChannel);
+    Task<ChatChannelDto> AddChannelAsync(string userId, string channelName);
     Task AddMessageToChannelAsync(string id, ChatMessage chatMessage);
     Task AddMemberToChannelAsync(string channelId, string userId);
     Task AddAdminToChannelAsync(string channelId, string userId);
