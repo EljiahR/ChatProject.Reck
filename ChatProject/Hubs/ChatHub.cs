@@ -12,14 +12,12 @@ namespace ChatProject.Hubs;
 public class ChatHub : Hub
 {
     private readonly IChannelService _channelService;
-    private readonly IMessageService _messageService;
     private readonly UserManager<ChatUser> _userManager;
     private readonly ConnectionManager _connectionManager;
 
-    public ChatHub(IChannelService channelService, IMessageService messageService, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
+    public ChatHub(IChannelService channelService, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
     {
         _channelService = channelService;
-        _messageService = messageService;
         _userManager = userManager;
         _connectionManager = connectionManager;
     }
@@ -36,7 +34,7 @@ public class ChatHub : Hub
         var message = new ChatMessage {Content = content, Username = user!.UserName!, ChannelId = channelId};
 
         await _channelService.AddMessageToChannelAsync(channelId, message);
-        await Clients.Group(channelId.ToString()).SendAsync("ReceiveMessage", message);
+        await Clients.Group(channelId).SendAsync("ReceiveMessage", message);
         
     }
     
@@ -62,7 +60,7 @@ public class ChatHub : Hub
         
         foreach (var channelId in channelIds)
         {
-            await Groups.AddToGroupAsync(Context.ConnectionId, channelId.ToString());
+            await Groups.AddToGroupAsync(Context.ConnectionId, channelId);
         }
         
         await base.OnConnectedAsync();

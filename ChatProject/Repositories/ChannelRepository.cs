@@ -42,8 +42,7 @@ public class ChannelRepository : IChannelRepository
     {
         var user = await _users
             .Include(u => u.ChannelUsers)
-            .ThenInclude(cu => cu.ChannelId)
-            .FirstOrDefaultAsync();
+            .FirstOrDefaultAsync(u => u.Id == userId);
         
         return user != null ? user.ChannelUsers.Select(cu => cu.ChannelId).ToList() : [];
         
