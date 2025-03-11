@@ -62,11 +62,28 @@ public class ChannelRepository : IChannelRepository
         return channels.Select(ModelConverter.MapChannelToDto).ToList();
     }
 
-    public async Task<string> AddChannelAsync(ChatChannel newChannel)
+    public async Task<ChatChannelDto> AddChannelAsync(string userId, string channelName)
     {
+        var newChannel = new ChatChannel
+        {
+            Id = Guid.NewGuid().ToString(),
+            Name = channelName,
+            CreatedById = userId,
+            ChannelUsers = [new ChannelUser
+            {
+                UserId = userId,
+                Role = ChannelRole.Creator
+            }]
+        };
+
         await _dbSet.AddAsync(newChannel);
         await _context.SaveChangesAsync();
-        return newChannel.Id;
+
+        var createdChannel = await _dbSet
+            .Include(c => c.ChannelUsers)
+            .SingleOrDefaultAsync(c => c.Id == newChannel.Id);
+        
+        return ModelConverter.MapChannelToDto(createdChannel!);
     }
 
     public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
