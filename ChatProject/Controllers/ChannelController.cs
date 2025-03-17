@@ -3,6 +3,7 @@ using ChatProject.Helpers;
 using ChatProject.Hubs;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.FromBodyModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -59,8 +60,8 @@ public class ChannelController : ControllerBase
     }
 
     [HttpPost]
-    [Route("{channelId}/add/{userId}")]
-    public async Task<IActionResult> AddUserToChannel(string channelId, string userId)
+    [Route("AddUserToChannel")]
+    public async Task<IActionResult> AddUserToChannel([FromBody] NewMemberToChannel model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
@@ -69,33 +70,33 @@ public class ChannelController : ControllerBase
             return Unauthorized("User was not found.");
         }
         
-        if (user.ChannelUsers.All(cu => cu.ChannelId != channelId))
+        if (user.ChannelUsers.All(cu => cu.ChannelId != model.channelId))
         {
             return Unauthorized("User not a member of the channel.");
         }
 
-        var newChannelUser = await _userService.GetUserWithChannelsByIdAsync(userId);
+        var newChannelUser = await _userService.GetUserWithChannelsByIdAsync(model.userId);
 
         if (newChannelUser == null)
         {
-            return NotFound($"User with id '{userId}' was not found.");
+            return NotFound($"User with id '{model.userId}' was not found.");
         }
         
-        if (newChannelUser.ChannelUsers.Any(cu => cu.ChannelId == channelId))
+        if (newChannelUser.ChannelUsers.Any(cu => cu.ChannelId == model.channelId))
         {
             return BadRequest("User already in channel.");
         }
 
         try
         {
-            await _channelService.AddMemberToChannelAsync(channelId, userId);
-            var connectionIds = _connectionManager.GetConnections(userId);
+            await _channelService.AddMemberToChannelAsync(model.channelId, model.userId);
+            var connectionIds = _connectionManager.GetConnections(model.userId);
             foreach (var connectionId in connectionIds)
             {
-                await _hubContext.Groups.AddToGroupAsync(connectionId, channelId);
+                await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
             }
 
-            return Ok("User added to channel successfully!");
+            return Ok(new { message = "User added successfully", user = ModelConverter.MapChatUserToPersonDto(newChannelUser)});
         }
         catch (Exception error)
         {
