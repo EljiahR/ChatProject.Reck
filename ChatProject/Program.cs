@@ -7,11 +7,17 @@ using ChatProject.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using System.Linq;
 
 var builder = WebApplication.CreateBuilder(args);
 
 string? dbConnection = builder.Configuration["DatabaseConnectionString"];
-string allowedOrigin = builder.Configuration["AllowedOrigin"] ?? "http://localhost:5173";
+
+var allowedOrigins = new List<string>
+{
+    builder.Configuration["AllowedOrigin"] ?? "http://localhost:5173",
+    builder.Configuration["DevelopmentOrigin"];
+};
 
 if (!string.IsNullOrWhiteSpace(dbConnection))
 {
@@ -30,7 +36,7 @@ builder.Services.AddCors(options =>
     options.AddPolicy("AllowChat",  
         policy  =>
         {
-            policy.WithOrigins(allowedOrigin)
+            policy.WithOrigins(allowedOrigins.Where(o => !string.IsNullOrWhiteSpace(o)).ToArray())
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
