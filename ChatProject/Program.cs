@@ -10,15 +10,27 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
-builder.Services.AddDbContext<ChatDbContext>(options =>
-    options.UseSqlite("Data Source=chat.db"), ServiceLifetime.Scoped);
+string? dbConnection = builder.Configuration["DatabaseConnectionString"];
+string allowedOrigin = builder.Configuration["AllowedOrigin"] ?? "http://localhost:5173";
+
+if (!string.IsNullOrWhiteSpace(dbConnection))
+{
+    builder.Services.AddDbContext<ChatDbContext>(options =>
+        options.UseNpgsql(dbConnection));
+}
+else
+{
+    builder.Services.AddDbContext<ChatDbContext>(options =>
+        options.UseSqlite("Data Source=chat.db"));
+}
+
 
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowChat",  
         policy  =>
         {
-            policy.WithOrigins("http://localhost:5173")
+            policy.WithOrigins(allowedOrigin)
                 .AllowAnyHeader()
                 .AllowAnyMethod()
                 .AllowCredentials();
