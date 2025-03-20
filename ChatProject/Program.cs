@@ -16,7 +16,7 @@ string? dbConnection = builder.Configuration["DatabaseConnectionString"];
 var allowedOrigins = new List<string>
 {
     builder.Configuration["AllowedOrigin"] ?? "http://localhost:5173",
-    builder.Configuration["DevelopmentOrigin"];
+    builder.Configuration["DevelopmentOrigin"]
 };
 
 if (!string.IsNullOrWhiteSpace(dbConnection))
