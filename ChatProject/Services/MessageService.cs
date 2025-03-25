@@ -21,4 +21,10 @@ public class MessageService : IMessageService
     {
         await _repository.AddMessageAsync(chatMessage);
     }
+
+    public async Task<ChatMessage?> GetMessageByIdAsync(string id)
+    {
+        return await _repository.GetMessageByIdAsync(id);
+    }
+
 }

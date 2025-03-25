@@ -1,7 +1,6 @@
 namespace ChatProject.Models.FromBodyModels;
 
-public class NewMemberToChannel
+public class ChannelIdDto
 {
-    public string userId { get; set; }
     public string channelId { get; set; }
 }
