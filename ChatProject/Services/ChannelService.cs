@@ -59,4 +59,9 @@ public class ChannelService : IChannelService
         await _repository.RemoveUserFromChannelAsync(channelId, userId);
     }
 
+    public async Task RemoveMessageFromChannelAsync(string channelId, string messageId)
+    {
+        await _repository.RemoveMessageFromChannelAsync(channelId, messageId);
+    }
+
 }
