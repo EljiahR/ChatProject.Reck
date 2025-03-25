@@ -84,20 +84,6 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Route("UserInfo")]
-    public async Task<IActionResult> GetUserInfo()
-    {
-        var user = await _userManager.GetUserAsync(User);
-
-        if (user == null)
-        {
-            return Unauthorized();
-        }
-
-        return Ok(new { user.UserName });
-    }
-
-    [HttpGet]
     [Route("Status")]
     public async Task<IActionResult> LoginStatus()
     {

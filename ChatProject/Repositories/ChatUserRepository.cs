@@ -23,4 +23,11 @@ public class ChatUserRepository : IChatUserRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
 
+    public async Task<ChatUserDto?> GetUserDtoAsync(string userId)
+    {
+        var user = await _dbSet
+            .Include(u => u.ChannelUsers)
+                .ThenInclude(cu => cu.Channel)
+            .FirstOrDefaultAsync(u => u.Id == userId);
+    }
 }
