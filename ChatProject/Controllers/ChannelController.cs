@@ -61,7 +61,7 @@ public class ChannelController : ControllerBase
 
     [HttpPost]
     [Route("AddUserToChannel")]
-    public async Task<IActionResult> AddUserToChannel([FromBody] NewMemberToChannel model)
+    public async Task<IActionResult> AddUserToChannel([FromBody] UserChannelDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
@@ -101,6 +101,42 @@ public class ChannelController : ControllerBase
         catch (Exception error)
         {
             return BadRequest("Error occured when adding user: " + error.Message);
+        }
+    }
+
+    [HttpPost]
+    [Route("RemoveUserFromChannel")]
+    public async Task<IActionResult> RemoveUserFromChannel([FromBody] UserChannelDto model)
+    {
+        try
+        {
+            await _channelService.RemoveUserFromChannelAsync(model.channelId, model.userId);
+            return Ok(new { message = "User successfully removed from channel" });
+        }
+        catch (Exception error)
+        {
+            return BadRequest("Error occured when trying to remove user from channel: " + error.Message);
+        }
+    }
+    
+    [HttpPost]
+    [Route("RemoveSelfFromChannel")]
+    public async Task<IActionResult> RemoveSelfFromChannel([FromBody] ChannelIdDto model)
+    {
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound("User was not found.");
+        }
+        
+        try
+        {
+            await _channelService.RemoveUserFromChannelAsync(model.channelId, user.Id);
+            return Ok(new { message = "User successfully removed from channel" });
+        }
+        catch (Exception error)
+        {
+            return BadRequest("Error occured when trying to remove user from channel: " + error.Message);
         }
     }
 }
