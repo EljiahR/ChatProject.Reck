@@ -49,6 +49,7 @@ public class UserController : ControllerBase
 
             if (result.Succeeded)
             {
+                await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
                 return Ok(new { message = "User created successfully!" });
             }
 
