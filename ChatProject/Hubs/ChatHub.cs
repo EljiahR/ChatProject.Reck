@@ -44,6 +44,28 @@ public class ChatHub : Hub
         
     }
     
+    public async Task RemoveMessage(string channelId, string messageId)
+    {
+        var userId = Context.UserIdentifier;
+  
+        if (Context.User == null || string.IsNullOrWhiteSpace(userId) || !_connectionManager.IsInChannel(userId, channelId))
+        {
+            throw new HubException("Unauthorized");
+        }
+        
+        var user = await _userManager.GetUserAsync(Context.User);
+        if (user == null)
+        {
+            throw new HubException("Unauthorized");
+        }
+        
+        
+
+        await _channelService.AddMessageToChannelAsync(channelId, message);
+        await Clients.Group(channelId).SendAsync("ReceiveMessage", message);
+        
+    }
+    
     // Adds user to all channel groups, handles multiple connections from the same user as well
     // No I did not come up with this myself
     public override async Task OnConnectedAsync()

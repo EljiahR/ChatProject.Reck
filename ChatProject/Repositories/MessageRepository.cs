@@ -33,6 +33,11 @@ public class MessageRepository : IMessageRepository
         return await _dbSet.ToListAsync();
     }
 
+    public async Task<ChatMessage?> GetMessageByIdAsync(string id)
+    {
+        return await _dbSet.FindAsync(id);
+    }
+
     private async Task SaveChangesAsync()
     {
         await _context.SaveChangesAsync();
