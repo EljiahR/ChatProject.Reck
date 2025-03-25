@@ -36,6 +36,7 @@ public class ChatHub : Hub
         {
             throw new HubException("Unauthorized");
         }
+        
         var message = new ChatMessage {Content = content, Username = user.UserName!, ChannelId = channelId, SentById = user.Id};
 
         await _channelService.AddMessageToChannelAsync(channelId, message);

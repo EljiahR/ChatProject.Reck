@@ -14,4 +14,5 @@ public interface IChannelRepository
     Task AddMemberToChannelAsync(string channelId, string userId);
     Task AddAdminToChannelAsync(string channelId, string userId);
     Task RemoveUserFromChannelAsync(string channelId, string userId);
+    Task RemoveMessageFromChannelAsync(string channelId, string messageId);
 }

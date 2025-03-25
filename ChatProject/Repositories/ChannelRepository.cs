@@ -140,6 +140,22 @@ public class ChannelRepository : IChannelRepository
             _channelUsers.Remove(entry);
             await _context.SaveChangesAsync();
         }
+    }
 
+    public async Task RemoveMessageFromChannelAsync(string channelId, string messageId)
+    {
+        var channel = await _channels
+            .Include(c => c.ChannelMessages)
+            .Where(c => c.Id == channelId)
+            .FirstOrDefaultAsync();
+        if (channel != null)
+        {
+            var messageToDelete = channel.ChannelMessages.FirstOrDefault(m => m.Id == messageId);
+            if (messageToDelete != null)
+            {
+                channel.ChannelMessages.Remove(messageToDelete);
+                await _context.SaveChangesAsync();
+            }
+        }
     }
 }
