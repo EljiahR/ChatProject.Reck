@@ -25,13 +25,18 @@ public class ChatHub : Hub
     public async Task SendMessage(string content, string channelId)
     {
         var userId = Context.UserIdentifier;
-        if (!_connectionManager.IsInChannel(userId!, channelId))
+  
+        if (Context.User == null || string.IsNullOrWhiteSpace(userId) || !_connectionManager.IsInChannel(userId, channelId))
         {
             throw new HubException("Unauthorized");
         }
         
-        var user = await _userManager.GetUserAsync(Context.User!);
-        var message = new ChatMessage {Content = content, Username = user!.UserName!, ChannelId = channelId};
+        var user = await _userManager.GetUserAsync(Context.User);
+        if (user == null)
+        {
+            throw new HubException("Unauthorized");
+        }
+        var message = new ChatMessage {Content = content, Username = user.UserName!, ChannelId = channelId, SentById = user.Id};
 
         await _channelService.AddMessageToChannelAsync(channelId, message);
         await Clients.Group(channelId).SendAsync("ReceiveMessage", message);
