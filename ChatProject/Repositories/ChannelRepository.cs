@@ -11,25 +11,25 @@ namespace ChatProject.Repositories;
 public class ChannelRepository : IChannelRepository
 {
     private readonly DbContext _context;
-    private readonly DbSet<ChatChannel> _dbSet;
+    private readonly DbSet<ChatChannel> _channels;
     private readonly DbSet<ChatUser> _users;
     private readonly DbSet<ChannelUser> _channelUsers;
 
     public ChannelRepository(ChatDbContext context)
     {
         _context = context;
-        _dbSet = _context.Set<ChatChannel>();
+        _channels = _context.Set<ChatChannel>();
         _users = _context.Set<ChatUser>();
         _channelUsers = _context.Set<ChannelUser>();
     }
 
     public async Task<ChatChannel?> GetChannelByIdAsync(string id)
     {
-        return await _dbSet.FindAsync(id);
+        return await _channels.FindAsync(id);
     }
     public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
-        return await _dbSet
+        return await _channels
             .Include(c => c.ChannelMessages)
             .Include(c => c.ChannelUsers)
             .ThenInclude(cu => cu.User)
@@ -51,7 +51,7 @@ public class ChannelRepository : IChannelRepository
 
     public async Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId)
     {
-        var channels = await _dbSet
+        var channels = await _channels
             .Where(c => c.ChannelUsers.Any(cu => cu.UserId == userId))
             .Include(c => c.ChannelUsers)
             .ThenInclude(cu => cu.User)
@@ -75,10 +75,10 @@ public class ChannelRepository : IChannelRepository
             }]
         };
 
-        await _dbSet.AddAsync(newChannel);
+        await _channels.AddAsync(newChannel);
         await _context.SaveChangesAsync();
 
-        var createdChannel = await _dbSet
+        var createdChannel = await _channels
             .Include(c => c.ChannelUsers)
             .SingleOrDefaultAsync(c => c.Id == newChannel.Id);
         
@@ -87,7 +87,7 @@ public class ChannelRepository : IChannelRepository
 
     public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
     {
-        var channel = await _dbSet
+        var channel = await _channels
             .Include(c => c.ChannelMessages)
             .FirstOrDefaultAsync(x => x.Id == id);
         
@@ -130,5 +130,16 @@ public class ChannelRepository : IChannelRepository
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
         }
+    }
+
+    public async Task RemoveUserFromChannelAsync(string channelId, string userId)
+    {
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        if (entry != null)
+        {
+            _channelUsers.Remove(entry);
+            await _context.SaveChangesAsync();
+        }
+
     }
 }
