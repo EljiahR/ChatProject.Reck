@@ -12,6 +12,7 @@ public class ChannelUser
     public ChatChannel Channel { get; set; }
     
     public ChannelRole Role { get; set; }
+    public UserStatus State { get; set; }
 }
 
 public enum ChannelRole
@@ -19,4 +20,11 @@ public enum ChannelRole
     Creator,
     Admin,
     Member
+}
+
+public enum UserStatus
+{
+    Pending,
+    Active,
+    Banned
 }
