@@ -89,9 +89,7 @@ public class UserController : ControllerBase
     {
         if (!User.Identity!.IsAuthenticated) return Unauthorized();
         
-        var userBo = await _userManager.GetUserAsync(User);
-        var channels = await _channelService.GetAllUserChannelsAsync(userBo!.Id);
-        var friends = await _userManager.Users.Where(user => userBo.FriendIds.Contains(user.Id)).ToListAsync();
+        
         
         return Ok(ModelConverter.MapChatUserToDto(userBo!, channels, friends));
         

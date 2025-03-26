@@ -28,6 +28,12 @@ public class ChatUserRepository : IChatUserRepository
         var user = await _dbSet
             .Include(u => u.ChannelUsers)
                 .ThenInclude(cu => cu.Channel)
+            .Include(u => u.FriendsInitiated)
+                .ThenInclude(f => f.Receiver)
+            .Include(u => u.FriendsReceived)
+                .ThenInclude(f => f.Initiator)
             .FirstOrDefaultAsync(u => u.Id == userId);
+        
+        
     }
 }
