@@ -1,20 +1,24 @@
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
+using NuGet.Packaging;
 
 namespace ChatProject.Helpers;
 
 public class ModelConverter
 {
-    public static ChatUserDto MapChatUserToDto(ChatUser userBo, List<ChatChannelDto> channels, IEnumerable<ChatUser> friends)
+    public static ChatUserDto MapChatUserToDto(ChatUser userBo)
     {
+        List<PersonDto> friendList = new();
+        friendList.AddRange(userBo.FriendsInitiated.Select(f => MapChatUserToPersonDto(f.Receiver)));
+        friendList.AddRange(userBo.FriendsReceived.Select(f => MapChatUserToPersonDto(f.Initiator)));
         
         return new ChatUserDto() 
         { 
             Id = userBo.Id,
             UserName = userBo.UserName!, 
-            Channels = channels, 
-            Friends = friends.Select(MapChatUserToPersonDto).ToList()
+            Channels = userBo.ChannelUsers.Select(cu => MapChannelToDto(cu.Channel)).ToList(), 
+            Friends = friendList
         };
     }
 
