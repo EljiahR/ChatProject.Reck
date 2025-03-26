@@ -98,7 +98,7 @@ public class ChannelRepository : IChannelRepository
         }
     }
 
-    public async Task AddMemberToChannelAsync(string channelId, string userId)
+    public async Task InviteMemberToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null)
@@ -107,7 +107,8 @@ public class ChannelRepository : IChannelRepository
             {
                 ChannelId = channelId,
                 UserId = userId,
-                Role = ChannelRole.Member
+                Role = ChannelRole.Member,
+                Status = UserStatus.Pending
             };
 
             _channelUsers.Add(newEntry);
@@ -115,7 +116,7 @@ public class ChannelRepository : IChannelRepository
         }
     }
     
-    public async Task AddAdminToChannelAsync(string channelId, string userId)
+    public async Task InviteAdminToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null || entry.Role != ChannelRole.Admin)
@@ -124,7 +125,8 @@ public class ChannelRepository : IChannelRepository
             {
                 ChannelId = channelId,
                 UserId = userId,
-                Role = ChannelRole.Admin
+                Role = ChannelRole.Admin,
+                Status = UserStatus.Pending
             };
 
             _channelUsers.Add(newEntry);

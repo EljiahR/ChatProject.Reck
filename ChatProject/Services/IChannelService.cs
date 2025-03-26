@@ -11,8 +11,8 @@ public interface IChannelService
     Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId);
     Task<ChatChannelDto> AddChannelAsync(string userId, string channelName);
     Task AddMessageToChannelAsync(string id, ChatMessage chatMessage);
-    Task AddMemberToChannelAsync(string channelId, string userId);
-    Task AddAdminToChannelAsync(string channelId, string userId);
+    Task InviteMemberToChannelAsync(string channelId, string userId);
+    Task InviteAdminToChannelAsync(string channelId, string userId);
     Task RemoveUserFromChannelAsync(string channelId, string userId);
     Task RemoveMessageFromChannelAsync(string channelId, string messageId);
 
