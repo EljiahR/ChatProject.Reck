@@ -2,6 +2,7 @@ using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
 using NuGet.Packaging;
+// ReSharper disable All
 
 namespace ChatProject.Helpers;
 
@@ -17,21 +18,22 @@ public class ModelConverter
         { 
             Id = userBo.Id,
             UserName = userBo.UserName!, 
-            Channels = userBo.ChannelUsers.Select(cu => MapChannelToDto(cu.Channel)).ToList(), 
+            Channels = userBo.ChannelUsers.Select(cu => MapChannelToDto(cu.Channel, cu.Status)).ToList(), 
             Friends = friendList
         };
     }
 
-    public static ChatChannelDto MapChannelToDto(ChatChannel channel)
+    public static ChatChannelDto MapChannelToDto(ChatChannel channel, UserStatus userStatus)
     {
         return new ChatChannelDto
         {
             Id = channel.Id, 
             Name = channel.Name, 
-            Admins = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Admin).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
-            Members = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Member).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
+            Admins = userStatus == UserStatus.Pending || userStatus == UserStatus.Banned ? [] : channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Admin).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
+            Members = userStatus == UserStatus.Pending || userStatus == UserStatus.Banned ? [] : channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Member).Select(cu => MapChatUserToPersonDto(cu.User)).ToList(),
             Owner = channel.ChannelUsers.Where(cu => cu.Role == ChannelRole.Creator).Select(cu => MapChatUserToPersonDto(cu.User)).FirstOrDefault()!,
-            ChannelMessages = channel.ChannelMessages
+            ChannelMessages = userStatus == UserStatus.Pending || userStatus == UserStatus.Banned ? [] : channel.ChannelMessages,
+            IsPendingInvite = userStatus == UserStatus.Pending
         };
     }
 
