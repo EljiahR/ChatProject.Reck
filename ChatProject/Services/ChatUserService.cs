@@ -16,5 +16,15 @@ public class ChatUserService : IChatUserService
     {
         return await _repository.GetUserWithChannelsByIdAsync(userId);
     }
+
+    public async Task<ChatUserDto?> GetUserDtoAsync(string userId)
+    {
+        return await _repository.GetUserDtoAsync(userId);
+    }
+
+    public async Task AddFriends(string initiatorId, string receiverId)
+    { 
+        await _repository.AddFriends(initiatorId, receiverId);
+    }
     
 }

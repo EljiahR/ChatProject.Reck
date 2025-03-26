@@ -1,5 +1,7 @@
+using System.Security.Claims;
 using ChatProject.Helpers;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -15,13 +17,15 @@ public class UserController : ControllerBase
 {
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
+    private readonly IChatUserService _userService;
     private readonly IChannelService _channelService;
     private readonly IConfiguration _configuration;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChannelService channelService, IConfiguration configuration)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, IChannelService channelService, IConfiguration configuration)
     {
         _signInManager = signInManager;
         _userManager = userManager;
+        _userService = userService;
         _channelService = channelService;
         _configuration = configuration;
     }
@@ -88,10 +92,14 @@ public class UserController : ControllerBase
     public async Task<IActionResult> LoginStatus()
     {
         if (!User.Identity!.IsAuthenticated) return Unauthorized();
+
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return Unauthorized("Error finding user");
+        }
         
-        
-        
-        return Ok(ModelConverter.MapChatUserToDto(userBo!, channels, friends));
+        return Ok(ModelConverter.MapChatUserToDto(user));
         
     }
 
@@ -156,10 +164,12 @@ public class UserController : ControllerBase
         }
         
         var user = await _userManager.GetUserAsync(User);
-        user!.FriendIds.Add(model.Id);
-        newFriend.FriendIds.Add(user.Id);
-        await _userManager.UpdateAsync(user);
-        await _userManager.UpdateAsync(newFriend);
+        if (user == null)
+        {
+            return NotFound($"User was not found.");
+        }
+
+        await _userService.AddFriends(user.Id, newFriend.Id);
 
         return Ok(ModelConverter.MapChatUserToPersonDto(newFriend));
     }
