@@ -53,8 +53,15 @@ public class UserController : ControllerBase
 
             if (result.Succeeded)
             {
-                await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-                return Ok(new { message = "User created successfully!" });
+                var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+                if (signInResult.Succeeded)
+                {
+                    return Ok(new { message = "User created successfully!" });
+                }
+                else
+                {
+                    return BadRequest("Problem signing in user.");
+                }
             }
 
             return BadRequest(result.Errors);
