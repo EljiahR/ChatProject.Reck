@@ -22,7 +22,7 @@ public class ChatUserRepository : IChatUserRepository
     public async Task<ChatUser?> GetUserWithChannelsByIdAsync(string userId)
     {
         return await _dbSet
-            .Include(u => u.ChannelUsers)
+            .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
@@ -30,7 +30,7 @@ public class ChatUserRepository : IChatUserRepository
     public async Task<ChatUserDto?> GetUserDtoAsync(string userId)
     {
         var user = await _dbSet
-            .Include(u => u.ChannelUsers)
+            .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
             .Include(u => u.FriendsInitiated)
                 .ThenInclude(f => f.Receiver)

@@ -12,7 +12,7 @@ public class ChannelUser
     public ChatChannel Channel { get; set; }
     
     public ChannelRole Role { get; set; }
-    public UserStatus State { get; set; }
+    public UserStatus Status { get; set; }
 }
 
 public enum ChannelRole
