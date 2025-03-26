@@ -1,7 +1,5 @@
-using System.Security.Claims;
 using ChatProject.Helpers;
 using ChatProject.Models.ChatUserModels;
-using ChatProject.Models.JoinModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -18,16 +16,12 @@ public class UserController : ControllerBase
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IChatUserService _userService;
-    private readonly IChannelService _channelService;
-    private readonly IConfiguration _configuration;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, IChannelService channelService, IConfiguration configuration)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _userService = userService;
-        _channelService = channelService;
-        _configuration = configuration;
     }
 
     [HttpPost]
@@ -35,39 +29,38 @@ public class UserController : ControllerBase
     [Route("Register")]
     public async Task<IActionResult> RegisterUser([FromBody] RegisterDto model)
     {
-        if (ModelState.IsValid)
+        if (!ModelState.IsValid)
         {
-            var existingUser = await _userManager.FindByNameAsync(model.UserName);
-            if (existingUser != null)
-            {
-                return BadRequest(new { message = "Name taken"});
-            }
-            
-            var user = new ChatUser
-            {
-                UserName = model.UserName,
-                Email = model.Email
-            };
+            return BadRequest("Invalid data type.");
+        }
+        
+        var existingUser = await _userManager.FindByNameAsync(model.UserName);
+        if (existingUser != null)
+        {
+            return BadRequest(new { message = "Name taken"});
+        }
+        
+        var user = new ChatUser
+        {
+            UserName = model.UserName,
+            Email = model.Email
+        };
 
-            var result = await _userManager.CreateAsync(user, model.Password!);
+        var result = await _userManager.CreateAsync(user, model.Password);
 
-            if (result.Succeeded)
-            {
-                var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-                if (signInResult.Succeeded)
-                {
-                    return Ok(new { message = "User created successfully!" });
-                }
-                else
-                {
-                    return BadRequest("Problem signing in user.");
-                }
-            }
-
+        if (!result.Succeeded)
+        {
             return BadRequest(result.Errors);
         }
+        
+        var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
+        if (signInResult.Succeeded)
+        {
+            return Ok(new { message = "User created successfully!" });
+        }
+        return BadRequest("Problem signing in user.");
+        
 
-        return BadRequest("Invalid data type.");
     }
 
     [HttpPost("SignIn")]
