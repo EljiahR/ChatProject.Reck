@@ -34,7 +34,7 @@ public class ChannelRepository : IChannelRepository
             .Include(c => c.ChannelUsers)
             .ThenInclude(cu => cu.User)
             .AsNoTracking()
-            .Select(c => ModelConverter.MapChannelToDto(c))
+            .Select(c => ModelConverter.MapChannelToDto(c, UserStatus.Active))
             .ToListAsync();
     }
 
@@ -53,12 +53,12 @@ public class ChannelRepository : IChannelRepository
     {
         var channels = await _channels
             .Where(c => c.ChannelUsers.Any(cu => cu.UserId == userId))
-            .Include(c => c.ChannelUsers)
-            .ThenInclude(cu => cu.User)
+            .Include(c => c.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
+                .ThenInclude(cu => cu.User)
             .Include(c => c.ChannelMessages)
             .ToListAsync();
 
-        return channels.Select(ModelConverter.MapChannelToDto).ToList();
+        return channels.Select(c => ModelConverter.MapChannelToDto(c, c.ChannelUsers.First(cu => cu.UserId == userId).Status)).ToList();
     }
 
     public async Task<ChatChannelDto> AddChannelAsync(string userId, string channelName)
@@ -82,7 +82,7 @@ public class ChannelRepository : IChannelRepository
             .Include(c => c.ChannelUsers)
             .SingleOrDefaultAsync(c => c.Id == newChannel.Id);
         
-        return ModelConverter.MapChannelToDto(createdChannel!);
+        return ModelConverter.MapChannelToDto(createdChannel!, UserStatus.Active);
     }
 
     public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
