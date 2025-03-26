@@ -1,7 +1,10 @@
+using ChatProject.Models.JoinModels;
+
 namespace ChatProject.Models.FromBodyModels;
 
-public class UserChannelDto
+public class ChannelUserDto
 {
     public string userId { get; set; }
     public string channelId { get; set; }
+    public ChannelRole role { get; set; } = ChannelRole.Member;
 }
