@@ -131,8 +131,15 @@ public class ChannelController : ControllerBase
             return BadRequest("Invite not found.");
         }
 
-        await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
-        return Ok("Successfully joined channel!");
+        try
+        {
+            await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
+            return Ok("Successfully joined channel!");
+        }
+        catch (Exception error)
+        {
+            return BadRequest("Error occured while accepting channel invite. " + error.Message);
+        }
     }
 
     [HttpPost]
