@@ -99,18 +99,26 @@ public class ChannelController : ControllerBase
                 await _channelService.InviteMemberToChannelAsync(model.channelId, model.userId);
             }
             
-            var connectionIds = _connectionManager.GetConnections(model.userId);
-            foreach (var connectionId in connectionIds)
-            {
-                await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
-            }
+            // WILL BE CHANGED AND MOVED TO CONFIRMATION
+            // var connectionIds = _connectionManager.GetConnections(model.userId);
+            // foreach (var connectionId in connectionIds)
+            // {
+            //     await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
+            // }
 
-            return Ok(new { message = "User added successfully", user = ModelConverter.MapChatUserToPersonDto(newChannelUser)});
+            return Ok(new { message = "User invite sent successfully!"});
         }
         catch (Exception error)
         {
             return BadRequest("Error occured when adding user: " + error.Message);
         }
+    }
+
+    [HttpPost]
+    [Route("ConfirmChannelInvite")]
+    public async Task<IActionResult> ConfirmChannelInviteAsync([FromBody] ChannelIdDto model)
+    {
+        return BadRequest("Not implemented yet");
     }
 
     [HttpPost]

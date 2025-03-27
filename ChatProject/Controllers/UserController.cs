@@ -155,7 +155,7 @@ public class UserController : ControllerBase
 
     [HttpPost]
     [Route("RequestFriend")]
-    public async Task<IActionResult> RequestFriend([FromBody]NewFriendDto model)
+    public async Task<IActionResult> RequestFriend([FromBody]FriendRequestDto model)
     {
         var newFriend = await _userManager.FindByIdAsync(model.Id);
         if (newFriend == null)
@@ -169,8 +169,29 @@ public class UserController : ControllerBase
             return NotFound($"User was not found.");
         }
 
-        await _userService.AddFriends(user.Id, newFriend.Id);
+        await _userService.RequestFriendAsync(user.Id, newFriend.Id);
 
-        return Ok(ModelConverter.MapChatUserToPersonDto(newFriend));
+        return Ok("Friend request sent!");
+    }
+
+    [HttpPost]
+    [Route("ConfirmFriendRequest")]
+    public async Task<IActionResult> ConfirmFriendRequest([FromBody] FriendRequestDto model)
+    {
+        var newFriend = await _userManager.FindByIdAsync(model.Id);
+        if (newFriend == null)
+        {
+            return NotFound($"User with id ({model.Id}) was not found.");
+        }
+        
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound($"User was not found.");
+        }
+
+        await _userService.ConfirmFriendAsync(newFriend.Id, user.Id);
+
+        return Ok("Friend request sent!");
     }
 }
