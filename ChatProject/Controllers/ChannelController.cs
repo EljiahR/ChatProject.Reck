@@ -4,6 +4,7 @@ using ChatProject.Hubs;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.FromBodyModels;
+using ChatProject.Models.JoinModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -60,8 +61,8 @@ public class ChannelController : ControllerBase
     }
 
     [HttpPost]
-    [Route("AddUserToChannel")]
-    public async Task<IActionResult> AddUserToChannel([FromBody] UserChannelDto model)
+    [Route("InviteUserToChannel")]
+    public async Task<IActionResult> InviteUserToChannel([FromBody] ChannelUserDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
@@ -89,14 +90,23 @@ public class ChannelController : ControllerBase
 
         try
         {
-            await _channelService.AddMemberToChannelAsync(model.channelId, model.userId);
-            var connectionIds = _connectionManager.GetConnections(model.userId);
-            foreach (var connectionId in connectionIds)
+            if (model.role == ChannelRole.Admin)
             {
-                await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
+                await _channelService.InviteAdminToChannelAsync(model.channelId, model.userId);
             }
+            else
+            {
+                await _channelService.InviteMemberToChannelAsync(model.channelId, model.userId);
+            }
+            
+            // WILL BE CHANGED AND MOVED TO CONFIRMATION
+            // var connectionIds = _connectionManager.GetConnections(model.userId);
+            // foreach (var connectionId in connectionIds)
+            // {
+            //     await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
+            // }
 
-            return Ok(new { message = "User added successfully", user = ModelConverter.MapChatUserToPersonDto(newChannelUser)});
+            return Ok(new { message = "User invite sent successfully!"});
         }
         catch (Exception error)
         {
@@ -105,8 +115,36 @@ public class ChannelController : ControllerBase
     }
 
     [HttpPost]
+    [Route("ConfirmChannelInvite")]
+    public async Task<IActionResult> ConfirmChannelInviteAsync([FromBody] ChannelIdDto model)
+    {
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
+        if (user == null)
+        {
+            return Unauthorized("User was not found.");
+        }
+
+        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == model.channelId);
+        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
+        {
+            return BadRequest("Invite not found.");
+        }
+
+        try
+        {
+            await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
+            return Ok("Successfully joined channel!");
+        }
+        catch (Exception error)
+        {
+            return BadRequest("Error occured while accepting channel invite. " + error.Message);
+        }
+    }
+
+    [HttpPost]
     [Route("RemoveUserFromChannel")]
-    public async Task<IActionResult> RemoveUserFromChannel([FromBody] UserChannelDto model)
+    public async Task<IActionResult> RemoveUserFromChannel([FromBody] ChannelUserDto model)
     {
         try
         {

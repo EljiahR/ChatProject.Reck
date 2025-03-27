@@ -44,14 +44,19 @@ public class ChannelService : IChannelService
         await _repository.AddMessageToChannelAsync(id, chatMessage);
     }
 
-    public async Task AddMemberToChannelAsync(string channelId, string userId)
+    public async Task InviteMemberToChannelAsync(string channelId, string userId)
     {
-        await _repository.AddMemberToChannelAsync(channelId, userId);
+        await _repository.InviteMemberToChannelAsync(channelId, userId);
     }
 
-    public async Task AddAdminToChannelAsync(string channelId, string userId)
+    public async Task InviteAdminToChannelAsync(string channelId, string userId)
     {
-        await _repository.AddAdminToChannelAsync(channelId, userId);
+        await _repository.InviteAdminToChannelAsync(channelId, userId);
+    }
+
+    public async Task ConfirmChannelInviteAsync(string channelId, string userId)
+    {
+        await _repository.ConfirmChannelInviteAsync(channelId, userId);
     }
 
     public async Task RemoveUserFromChannelAsync(string channelId, string userId)

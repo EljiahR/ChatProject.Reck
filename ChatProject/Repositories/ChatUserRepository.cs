@@ -22,7 +22,7 @@ public class ChatUserRepository : IChatUserRepository
     public async Task<ChatUser?> GetUserWithChannelsByIdAsync(string userId)
     {
         return await _dbSet
-            .Include(u => u.ChannelUsers)
+            .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
             .FirstOrDefaultAsync(u => u.Id == userId);
     }
@@ -30,7 +30,7 @@ public class ChatUserRepository : IChatUserRepository
     public async Task<ChatUserDto?> GetUserDtoAsync(string userId)
     {
         var user = await _dbSet
-            .Include(u => u.ChannelUsers)
+            .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
             .Include(u => u.FriendsInitiated)
                 .ThenInclude(f => f.Receiver)
@@ -41,7 +41,18 @@ public class ChatUserRepository : IChatUserRepository
         return user != null ? ModelConverter.MapChatUserToDto(user) : null;
     }
 
-    public async Task AddFriends(string initiatorId, string receiverId)
+    public async Task ConfirmFriendAsync(string initiatorId, string receiverId)
+    {
+        var friendship = await _friendships.Where(f => f.InitiatorId == initiatorId && f.ReceiverId == receiverId)
+            .FirstOrDefaultAsync();
+        if (friendship != null)
+        {
+            friendship.Status = FriendshipStatus.Friends;
+            await _context.SaveChangesAsync();
+        }
+    }
+
+    public async Task RequestFriendAsync(string initiatorId, string receiverId)
     {
         var friendship = await _friendships.Where(f => f.InitiatorId == initiatorId && f.ReceiverId == receiverId)
             .FirstOrDefaultAsync();
@@ -50,7 +61,8 @@ public class ChatUserRepository : IChatUserRepository
             var newFriendship = new Friendship
             {
                 InitiatorId = initiatorId,
-                ReceiverId = receiverId
+                ReceiverId = receiverId,
+                Status = FriendshipStatus.Pending
             };
 
             await _friendships.AddAsync(newFriendship);

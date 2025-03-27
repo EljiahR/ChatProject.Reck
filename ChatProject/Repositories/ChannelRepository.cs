@@ -34,7 +34,7 @@ public class ChannelRepository : IChannelRepository
             .Include(c => c.ChannelUsers)
             .ThenInclude(cu => cu.User)
             .AsNoTracking()
-            .Select(c => ModelConverter.MapChannelToDto(c))
+            .Select(c => ModelConverter.MapChannelToDto(c, UserStatus.Active))
             .ToListAsync();
     }
 
@@ -53,12 +53,12 @@ public class ChannelRepository : IChannelRepository
     {
         var channels = await _channels
             .Where(c => c.ChannelUsers.Any(cu => cu.UserId == userId))
-            .Include(c => c.ChannelUsers)
-            .ThenInclude(cu => cu.User)
+            .Include(c => c.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
+                .ThenInclude(cu => cu.User)
             .Include(c => c.ChannelMessages)
             .ToListAsync();
 
-        return channels.Select(ModelConverter.MapChannelToDto).ToList();
+        return channels.Select(c => ModelConverter.MapChannelToDto(c, c.ChannelUsers.First(cu => cu.UserId == userId).Status)).ToList();
     }
 
     public async Task<ChatChannelDto> AddChannelAsync(string userId, string channelName)
@@ -82,7 +82,7 @@ public class ChannelRepository : IChannelRepository
             .Include(c => c.ChannelUsers)
             .SingleOrDefaultAsync(c => c.Id == newChannel.Id);
         
-        return ModelConverter.MapChannelToDto(createdChannel!);
+        return ModelConverter.MapChannelToDto(createdChannel!, UserStatus.Active);
     }
 
     public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
@@ -98,7 +98,7 @@ public class ChannelRepository : IChannelRepository
         }
     }
 
-    public async Task AddMemberToChannelAsync(string channelId, string userId)
+    public async Task InviteMemberToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null)
@@ -107,7 +107,8 @@ public class ChannelRepository : IChannelRepository
             {
                 ChannelId = channelId,
                 UserId = userId,
-                Role = ChannelRole.Member
+                Role = ChannelRole.Member,
+                Status = UserStatus.Pending
             };
 
             _channelUsers.Add(newEntry);
@@ -115,7 +116,7 @@ public class ChannelRepository : IChannelRepository
         }
     }
     
-    public async Task AddAdminToChannelAsync(string channelId, string userId)
+    public async Task InviteAdminToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null || entry.Role != ChannelRole.Admin)
@@ -124,13 +125,25 @@ public class ChannelRepository : IChannelRepository
             {
                 ChannelId = channelId,
                 UserId = userId,
-                Role = ChannelRole.Admin
+                Role = ChannelRole.Admin,
+                Status = UserStatus.Pending
             };
 
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
         }
     }
+
+    public async Task ConfirmChannelInviteAsync(string channelId, string userId)
+    {
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        if (entry != null)
+        {
+            entry.Status = UserStatus.Active;
+            await _context.SaveChangesAsync();
+        }
+    }
+
 
     public async Task RemoveUserFromChannelAsync(string channelId, string userId)
     {

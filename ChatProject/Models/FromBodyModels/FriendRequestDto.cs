@@ -1,6 +1,6 @@
 namespace ChatProject.Models.ChatUserModels;
 
-public class NewFriendDto
+public class FriendRequestDto
 {
     public string Id { get; set; }
 }
