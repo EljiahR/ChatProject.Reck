@@ -118,7 +118,21 @@ public class ChannelController : ControllerBase
     [Route("ConfirmChannelInvite")]
     public async Task<IActionResult> ConfirmChannelInviteAsync([FromBody] ChannelIdDto model)
     {
-        return BadRequest("Not implemented yet");
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
+        if (user == null)
+        {
+            return Unauthorized("User was not found.");
+        }
+
+        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == model.channelId);
+        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
+        {
+            return BadRequest("Invite not found.");
+        }
+
+        await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
+        return Ok("Successfully joined channel!");
     }
 
     [HttpPost]
