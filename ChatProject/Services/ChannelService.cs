@@ -54,6 +54,11 @@ public class ChannelService : IChannelService
         await _repository.InviteAdminToChannelAsync(channelId, userId);
     }
 
+    public async Task ConfirmChannelInviteAsync(string channelId, string userId)
+    {
+        await _repository.ConfirmChannelInviteAsync(channelId, userId);
+    }
+
     public async Task RemoveUserFromChannelAsync(string channelId, string userId)
     {
         await _repository.RemoveUserFromChannelAsync(channelId, userId);

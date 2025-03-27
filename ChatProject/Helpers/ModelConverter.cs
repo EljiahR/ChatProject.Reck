@@ -1,7 +1,6 @@
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
-using NuGet.Packaging;
 // ReSharper disable All
 
 namespace ChatProject.Helpers;
@@ -19,7 +18,9 @@ public class ModelConverter
             Id = userBo.Id,
             UserName = userBo.UserName!, 
             Channels = userBo.ChannelUsers.Select(cu => MapChannelToDto(cu.Channel, cu.Status)).ToList(), 
-            Friends = friendList
+            Friends = friendList,
+            FriendRequests = userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Pending).ToList(),
+            ChannelRequests = userBo.ChannelUsers.Where(cu => cu.Status == UserStatus.Pending).ToList()
         };
     }
 

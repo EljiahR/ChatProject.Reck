@@ -154,8 +154,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Route("AddFriend")]
-    public async Task<IActionResult> AddFriend([FromBody]NewFriendDto model)
+    [Route("RequestFriend")]
+    public async Task<IActionResult> RequestFriend([FromBody]NewFriendDto model)
     {
         var newFriend = await _userManager.FindByIdAsync(model.Id);
         if (newFriend == null)
