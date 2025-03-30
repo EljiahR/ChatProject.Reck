@@ -83,6 +83,18 @@ public class ChannelService : IChannelService
     }
     public async Task ConfirmChannelInviteAsync(string channelId, string userId)
     {
+        var user = await _userRepository.GetUserWithChannelsByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User was not found.");
+        }
+
+        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == channelId);
+        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
+        {
+            throw new InvalidOperationException("Invite not found.");
+        }
+        
         await _repository.ConfirmChannelInviteAsync(channelId, userId);
     }
 

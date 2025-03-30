@@ -65,21 +65,16 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> InviteUserToChannel([FromBody] ChannelUserDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-
-
+        
         try
         {
             await _channelService.InviteUserToChannelAsync(currentUserId, model.channelId, model.userId, model.role);
 
             return Ok(new { message = "User invite sent successfully!" });
         }
-        catch (InvalidOperationException error)
-        {
-            return BadRequest(error.Message);
-        }
         catch (Exception error)
         {
-            return BadRequest("Error occured when adding user: " + error.Message);
+            return BadRequest(error.Message);
         }
     }
 
@@ -88,26 +83,15 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> ConfirmChannelInviteAsync([FromBody] ChannelIdDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
-        if (user == null)
-        {
-            return Unauthorized("User was not found.");
-        }
-
-        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == model.channelId);
-        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
-        {
-            return BadRequest("Invite not found.");
-        }
 
         try
         {
-            await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
+            await _channelService.ConfirmChannelInviteAsync(model.channelId, currentUserId);
             return Ok("Successfully joined channel!");
         }
         catch (Exception error)
         {
-            return BadRequest("Error occured while accepting channel invite. " + error.Message);
+            return BadRequest(error.Message);
         }
     }
 
