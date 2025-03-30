@@ -65,52 +65,16 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> InviteUserToChannel([FromBody] ChannelUserDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
-        if (user == null)
-        {
-            return Unauthorized("User was not found.");
-        }
         
-        if (user.ChannelUsers.All(cu => cu.ChannelId != model.channelId))
-        {
-            return Unauthorized("User not a member of the channel.");
-        }
-
-        var newChannelUser = await _userService.GetUserWithChannelsByIdAsync(model.userId);
-
-        if (newChannelUser == null)
-        {
-            return NotFound($"User with id '{model.userId}' was not found.");
-        }
-        
-        if (newChannelUser.ChannelUsers.Any(cu => cu.ChannelId == model.channelId))
-        {
-            return BadRequest("User already in channel.");
-        }
-
         try
         {
-            if (model.role == ChannelRole.Admin)
-            {
-                await _channelService.InviteAdminToChannelAsync(model.channelId, model.userId);
-            }
-            else
-            {
-                await _channelService.InviteMemberToChannelAsync(model.channelId, model.userId);
-            }
-            
-            // WILL BE CHANGED AND MOVED TO CONFIRMATION
-            // var connectionIds = _connectionManager.GetConnections(model.userId);
-            // foreach (var connectionId in connectionIds)
-            // {
-            //     await _hubContext.Groups.AddToGroupAsync(connectionId, model.channelId);
-            // }
+            await _channelService.InviteUserToChannelAsync(currentUserId, model.channelId, model.userId, model.role);
 
-            return Ok(new { message = "User invite sent successfully!"});
+            return Ok(new { message = "User invite sent successfully!" });
         }
         catch (Exception error)
         {
-            return BadRequest("Error occured when adding user: " + error.Message);
+            return BadRequest(error.Message);
         }
     }
 
@@ -119,26 +83,15 @@ public class ChannelController : ControllerBase
     public async Task<IActionResult> ConfirmChannelInviteAsync([FromBody] ChannelIdDto model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
-        var user = await _userService.GetUserWithChannelsByIdAsync(currentUserId);
-        if (user == null)
-        {
-            return Unauthorized("User was not found.");
-        }
-
-        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == model.channelId);
-        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
-        {
-            return BadRequest("Invite not found.");
-        }
 
         try
         {
-            await _channelService.ConfirmChannelInviteAsync(channelInvite.ChannelId, channelInvite.UserId);
+            await _channelService.ConfirmChannelInviteAsync(model.channelId, currentUserId);
             return Ok("Successfully joined channel!");
         }
         catch (Exception error)
         {
-            return BadRequest("Error occured while accepting channel invite. " + error.Message);
+            return BadRequest(error.Message);
         }
     }
 
