@@ -19,10 +19,6 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
-        // Join table for User < - > Channel
-        builder.Entity<ChannelUser>()
-            .HasKey(cu => new { cu.UserId, cu.ChannelId });
-
         // One-to-many: ChannelUser (join table) to User
         builder.Entity<ChannelUser>()
             .HasOne(cu => cu.User)

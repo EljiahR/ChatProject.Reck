@@ -58,6 +58,7 @@ public class ModelConverter
     {
         return new ChannelUserDto
         {
+            Id = channelUser.Id,
             User = MapChatUserToPersonDto(channelUser.User),
             UserId = channelUser.UserId,
             Channel = MapChannelToDto(channelUser.Channel, channelUser.Status),

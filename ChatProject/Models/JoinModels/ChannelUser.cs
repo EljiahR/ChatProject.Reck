@@ -5,6 +5,7 @@ namespace ChatProject.Models.JoinModels;
 
 public class ChannelUser
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     public string UserId { get; set; }
     public ChatUser User { get; set; }
     
