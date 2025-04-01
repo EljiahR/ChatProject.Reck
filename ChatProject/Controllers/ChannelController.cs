@@ -4,7 +4,6 @@ using ChatProject.Hubs;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.FromBodyModels;
-using ChatProject.Models.JoinModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -62,7 +61,7 @@ public class ChannelController : ControllerBase
 
     [HttpPost]
     [Route("InviteUserToChannel")]
-    public async Task<IActionResult> InviteUserToChannel([FromBody] ChannelUserDto model)
+    public async Task<IActionResult> InviteUserToChannel([FromBody] ChannelUserDtoReceive model)
     {
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         
@@ -97,7 +96,7 @@ public class ChannelController : ControllerBase
 
     [HttpPost]
     [Route("RemoveUserFromChannel")]
-    public async Task<IActionResult> RemoveUserFromChannel([FromBody] ChannelUserDto model)
+    public async Task<IActionResult> RemoveUserFromChannel([FromBody] ChannelUserDtoReceive model)
     {
         try
         {

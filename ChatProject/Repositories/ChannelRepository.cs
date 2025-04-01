@@ -71,7 +71,8 @@ public class ChannelRepository : IChannelRepository
             ChannelUsers = [new ChannelUser
             {
                 UserId = userId,
-                Role = ChannelRole.Creator
+                Role = ChannelRole.Creator,
+                Status = UserStatus.Active
             }]
         };
 

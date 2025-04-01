@@ -9,6 +9,6 @@ public class ChatUserDto
     public required string UserName { get; set; }
     public required List<ChatChannelDto> Channels { get; set; }
     public required List<PersonDto> Friends { get; set; } = new();
-    public required List<Friendship> FriendRequests { get; set; } = new();
-    public required List<ChannelUser> ChannelRequests { get; set; } = new();
+    public required List<FriendshipDto> FriendRequests { get; set; } = new();
+    public required List<ChannelUserDto> ChannelRequests { get; set; } = new();
 }

@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ChatProject.Helpers;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
@@ -56,7 +57,8 @@ public class UserController : ControllerBase
         var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
         if (signInResult.Succeeded)
         {
-            return Ok(new { message = "User created successfully!" });
+            var userDto = await _userService.GetUserDtoAsync(user.Id);
+            return Ok(new { message = "User created successfully!", info = userDto });
         }
         return BadRequest("Problem signing in user.");
         
@@ -79,7 +81,8 @@ public class UserController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
             if (result.Succeeded)
             {
-                return Ok(new { message = "Login successful!" });
+                var userDto = await _userService.GetUserDtoAsync(user.Id);
+                return Ok(new { message = "Login successful!", info = userDto });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -93,13 +96,14 @@ public class UserController : ControllerBase
     {
         if (!User.Identity!.IsAuthenticated) return Unauthorized();
 
-        var user = await _userManager.GetUserAsync(User);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await _userService.GetUserDtoAsync(currentUserId);
         if (user == null)
         {
             return Unauthorized("Error finding user");
         }
         
-        return Ok(ModelConverter.MapChatUserToDto(user));
+        return Ok(user);
         
     }
 
