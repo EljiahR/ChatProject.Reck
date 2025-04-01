@@ -146,7 +146,7 @@ public class UserController : ControllerBase
         var client = await _userManager.GetUserAsync(User);
         
         var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
-            .Select(user => ModelConverter.MapChatUserToPersonDto(user))
+            .Select(user => ModelConverter.MapChatUserToPersonDto(user, false))
             .ToListAsync();
         
         if (people.Count > 0)

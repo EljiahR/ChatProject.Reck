@@ -10,8 +10,8 @@ public class ModelConverter
     public static ChatUserDto MapChatUserToDto(ChatUser userBo)
     {
         List<PersonDto> friendList = new();
-        friendList.AddRange(userBo.FriendsInitiated.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Receiver)));
-        friendList.AddRange(userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Initiator)));
+        friendList.AddRange(userBo.FriendsInitiated.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Receiver, true)));
+        friendList.AddRange(userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Initiator, true)));
         
         return new ChatUserDto() 
         { 
@@ -38,9 +38,9 @@ public class ModelConverter
         };
     }
 
-    public static PersonDto MapChatUserToPersonDto(ChatUser user)
+    public static PersonDto MapChatUserToPersonDto(ChatUser user, bool isFriend = false)
     {
-        return new PersonDto { UserName = user.UserName, UserId = user.Id};
+        return new PersonDto { UserName = user.UserName, Id = user.Id, IsFriend = isFriend};
     }
 
     public static FriendshipDto MapFriendshipToDto(Friendship friendship)
