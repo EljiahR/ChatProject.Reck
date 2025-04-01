@@ -20,7 +20,7 @@ public class ModelConverter
             Channels = userBo.ChannelUsers.Where(cu => cu.Status == UserStatus.Active).Select(cu => MapChannelToDto(cu.Channel, cu.Status)).ToList(), 
             Friends = friendList,
             FriendRequests = userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Pending).Select(MapFriendshipToDto).ToList(),
-            ChannelRequests = userBo.ChannelUsers.Where(cu => cu.Status == UserStatus.Pending).Select(MapChannelUserToDto).ToList()
+            ChannelInvites = userBo.ChannelUsers.Where(cu => cu.Status == UserStatus.Pending).Select(MapChannelUserToDto).ToList()
         };
     }
 
