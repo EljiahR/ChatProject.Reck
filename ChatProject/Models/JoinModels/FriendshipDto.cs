@@ -4,6 +4,7 @@ namespace ChatProject.Models.JoinModels;
 
 public class FriendshipDto
 {
+    public string Id { get; set; }
     public string InitiatorId { get; set; }
     public string ReceiverId { get; set; }
     

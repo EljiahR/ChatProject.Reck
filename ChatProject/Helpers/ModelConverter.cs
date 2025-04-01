@@ -47,6 +47,7 @@ public class ModelConverter
     {
         return new FriendshipDto
         {
+            Id = friendship.Id,
             InitiatorId = friendship.InitiatorId,
             ReceiverId = friendship.ReceiverId,
             Initiator = MapChatUserToPersonDto(friendship.Initiator),

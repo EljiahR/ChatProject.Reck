@@ -4,6 +4,7 @@ namespace ChatProject.Models.JoinModels;
 
 public class Friendship
 {
+    public string Id { get; set; } = Guid.NewGuid().ToString();
     public string InitiatorId { get; set; }
     public string ReceiverId { get; set; }
     

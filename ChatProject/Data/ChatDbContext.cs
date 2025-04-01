@@ -40,9 +40,6 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
 
         // Join table for User < - > User
         builder.Entity<Friendship>()
-            .HasKey(f => new { f.InitiatorId, f.ReceiverId });
-        
-        builder.Entity<Friendship>()
             .HasOne(f => f.Initiator)
             .WithMany(u => u.FriendsInitiated)
             .HasForeignKey(f => f.InitiatorId);
