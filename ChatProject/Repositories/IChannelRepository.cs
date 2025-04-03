@@ -1,5 +1,7 @@
 using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
+using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 
 namespace ChatProject.Repositories;
 
@@ -11,8 +13,8 @@ public interface IChannelRepository
     Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId);
     Task<ChatChannelDto> AddChannelAsync(string userId, string channelName);
     Task AddMessageToChannelAsync(string id, ChatMessage chatMessage);
-    Task InviteMemberToChannelAsync(string channelId, string userId);
-    Task InviteAdminToChannelAsync(string channelId, string userId);
+    Task<ChannelUserDto> InviteMemberToChannelAsync(string channelId, string userId);
+    Task<ChannelUserDto> InviteAdminToChannelAsync(string channelId, string userId);
     Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId);
     Task RemoveUserFromChannelAsync(string channelId, string userId);
     Task RemoveMessageFromChannelAsync(string channelId, string messageId);

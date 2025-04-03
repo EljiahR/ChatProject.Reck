@@ -99,7 +99,7 @@ public class ChannelRepository : IChannelRepository
         }
     }
 
-    public async Task InviteMemberToChannelAsync(string channelId, string userId)
+    public async Task<ChannelUserDto> InviteMemberToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null)
@@ -114,10 +114,13 @@ public class ChannelRepository : IChannelRepository
 
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
+            return ModelConverter.MapChannelUserToDto(newEntry);
         }
+
+        return ModelConverter.MapChannelUserToDto(entry);
     }
     
-    public async Task InviteAdminToChannelAsync(string channelId, string userId)
+    public async Task<ChannelUserDto> InviteAdminToChannelAsync(string channelId, string userId)
     {
         var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
         if (entry == null || entry.Role != ChannelRole.Admin)
@@ -132,7 +135,10 @@ public class ChannelRepository : IChannelRepository
 
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
+            return ModelConverter.MapChannelUserToDto(newEntry);
         }
+
+        return ModelConverter.MapChannelUserToDto(entry);
     }
 
     public async Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId)

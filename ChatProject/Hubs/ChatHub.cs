@@ -1,6 +1,7 @@
 using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -76,6 +77,28 @@ public class ChatHub : Hub
         await _channelService.RemoveMessageFromChannelAsync(channelId, messageId);
         await Clients.Group(channelId).SendAsync("DeleteMessage", messageId);
     }
+    
+    // Send/Receive Channel Invites
+    public async Task SendChannelInvite(string channelId, string newUserId)
+    {
+        try
+        {
+            await _channelService.InviteUserToChannelAsync(Context.UserIdentifier!, channelId, newUserId, ChannelRole.Member);
+            
+            Clients.User(newUserId).SendAsync("GetChannelInvite", )
+        }
+        catch (Exception ex)
+        {
+            
+        }
+    }
+    
+    // Accept Channel Invites
+    
+    // Send/Receive Friend Requests
+    
+    // Accept Friend Requests
+    
     
     // Adds user to all channel groups, handles multiple connections from the same user as well
     // No I did not come up with this myself
