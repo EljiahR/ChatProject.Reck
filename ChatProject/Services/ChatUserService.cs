@@ -1,4 +1,5 @@
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.JoinModels;
 using ChatProject.Repositories;
 
 namespace ChatProject.Services;
@@ -22,14 +23,14 @@ public class ChatUserService : IChatUserService
         return await _repository.GetUserDtoAsync(userId);
     }
 
-    public async Task ConfirmFriendAsync(string initiatorId, string receiverId)
+    public async Task<PersonDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
     {
-        await _repository.ConfirmFriendAsync(initiatorId, receiverId);
+        return await _repository.ConfirmFriendAsync(initiatorId, receiverId);
     }
 
-    public async Task RequestFriendAsync(string initiatorId, string receiverId)
+    public async Task<FriendshipDto?> RequestFriendAsync(string initiatorId, string receiverId)
     {
-        await _repository.RequestFriendAsync(initiatorId, receiverId);
+        return await _repository.RequestFriendAsync(initiatorId, receiverId);
     }
     
 }
