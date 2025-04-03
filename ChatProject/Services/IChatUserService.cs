@@ -6,6 +6,7 @@ public interface IChatUserService
 {
     Task<ChatUser?> GetUserWithChannelsByIdAsync(string userId);
     Task<ChatUserDto?> GetUserDtoAsync(string userId);
-    Task AddFriends(string initiatorId, string receiverId);
+    Task ConfirmFriendAsync(string initiatorId, string receiverId);
+    Task RequestFriendAsync(string initiatorId, string receiverId);
 
 }

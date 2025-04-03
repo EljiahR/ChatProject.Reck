@@ -1,5 +1,6 @@
 using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
+using ChatProject.Models.JoinModels;
 using ChatProject.Repositories;
 
 namespace ChatProject.Services;
@@ -7,10 +8,12 @@ namespace ChatProject.Services;
 public class ChannelService : IChannelService
 {
     private readonly IChannelRepository _repository;
+    private readonly IChatUserRepository _userRepository;
 
-    public ChannelService(IChannelRepository repository)
+    public ChannelService(IChannelRepository repository, IChatUserRepository userRepository)
     {
         _repository = repository;
+        _userRepository = userRepository;
     }
 
     public async Task<ChatChannel?> GetChannelByIdAsync(string id)
@@ -44,14 +47,55 @@ public class ChannelService : IChannelService
         await _repository.AddMessageToChannelAsync(id, chatMessage);
     }
 
-    public async Task AddMemberToChannelAsync(string channelId, string userId)
+    public async Task InviteUserToChannelAsync(string callerId, string channelId, string userId, ChannelRole role)
     {
-        await _repository.AddMemberToChannelAsync(channelId, userId);
-    }
+        var user = await _userRepository.GetUserWithChannelsByIdAsync(callerId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User was not found.");
+        }
+        
+        if (user.ChannelUsers.All(cu => cu.ChannelId != channelId))
+        {
+            throw new InvalidOperationException("User not a member of the channel.");
+        }
 
-    public async Task AddAdminToChannelAsync(string channelId, string userId)
+        var newChannelUser = await _userRepository.GetUserWithChannelsByIdAsync(userId);
+
+        if (newChannelUser == null)
+        {
+            throw new InvalidOperationException($"User with id '{userId}' was not found.");
+        }
+        
+        if (newChannelUser.ChannelUsers.Any(cu => cu.ChannelId == channelId))
+        {
+            throw new InvalidOperationException("User already in channel.");
+        }
+
+        if (role == ChannelRole.Admin)
+        {
+            await _repository.InviteMemberToChannelAsync(channelId, userId);
+        }
+        else
+        {
+            await  _repository.InviteMemberToChannelAsync(channelId, userId);
+        }
+    }
+    public async Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId)
     {
-        await _repository.AddAdminToChannelAsync(channelId, userId);
+        var user = await _userRepository.GetUserWithChannelsByIdAsync(userId);
+        if (user == null)
+        {
+            throw new InvalidOperationException("User was not found.");
+        }
+
+        var channelInvite = user.ChannelUsers.FirstOrDefault(cu => cu.ChannelId == channelId);
+        if (channelInvite == null || channelInvite.Status != UserStatus.Pending)
+        {
+            throw new InvalidOperationException("Invite not found.");
+        }
+        
+        return await _repository.ConfirmChannelInviteAsync(channelId, userId);
     }
 
     public async Task RemoveUserFromChannelAsync(string channelId, string userId)

@@ -22,9 +22,14 @@ public class ChatUserService : IChatUserService
         return await _repository.GetUserDtoAsync(userId);
     }
 
-    public async Task AddFriends(string initiatorId, string receiverId)
-    { 
-        await _repository.AddFriends(initiatorId, receiverId);
+    public async Task ConfirmFriendAsync(string initiatorId, string receiverId)
+    {
+        await _repository.ConfirmFriendAsync(initiatorId, receiverId);
+    }
+
+    public async Task RequestFriendAsync(string initiatorId, string receiverId)
+    {
+        await _repository.RequestFriendAsync(initiatorId, receiverId);
     }
     
 }

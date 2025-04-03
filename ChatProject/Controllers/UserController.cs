@@ -1,3 +1,4 @@
+using System.Security.Claims;
 using ChatProject.Helpers;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
@@ -56,7 +57,8 @@ public class UserController : ControllerBase
         var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
         if (signInResult.Succeeded)
         {
-            return Ok(new { message = "User created successfully!" });
+            var userDto = await _userService.GetUserDtoAsync(user.Id);
+            return Ok(new { message = "User created successfully!", info = userDto });
         }
         return BadRequest("Problem signing in user.");
         
@@ -79,7 +81,8 @@ public class UserController : ControllerBase
             var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
             if (result.Succeeded)
             {
-                return Ok(new { message = "Login successful!" });
+                var userDto = await _userService.GetUserDtoAsync(user.Id);
+                return Ok(new { message = "Login successful!", info = userDto });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -93,13 +96,14 @@ public class UserController : ControllerBase
     {
         if (!User.Identity!.IsAuthenticated) return Unauthorized();
 
-        var user = await _userManager.GetUserAsync(User);
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var user = await _userService.GetUserDtoAsync(currentUserId);
         if (user == null)
         {
             return Unauthorized("Error finding user");
         }
         
-        return Ok(ModelConverter.MapChatUserToDto(user));
+        return Ok(user);
         
     }
 
@@ -142,7 +146,7 @@ public class UserController : ControllerBase
         var client = await _userManager.GetUserAsync(User);
         
         var people = await _userManager.Users.Where(user => user.UserName != client!.UserName && user.UserName!.ToLower().Contains(searchQuery.ToLower()))
-            .Select(user => ModelConverter.MapChatUserToPersonDto(user))
+            .Select(user => ModelConverter.MapChatUserToPersonDto(user, false))
             .ToListAsync();
         
         if (people.Count > 0)
@@ -154,8 +158,8 @@ public class UserController : ControllerBase
     }
 
     [HttpPost]
-    [Route("AddFriend")]
-    public async Task<IActionResult> AddFriend([FromBody]NewFriendDto model)
+    [Route("RequestFriend")]
+    public async Task<IActionResult> RequestFriend([FromBody]FriendRequestDto model)
     {
         var newFriend = await _userManager.FindByIdAsync(model.Id);
         if (newFriend == null)
@@ -169,8 +173,29 @@ public class UserController : ControllerBase
             return NotFound($"User was not found.");
         }
 
-        await _userService.AddFriends(user.Id, newFriend.Id);
+        await _userService.RequestFriendAsync(user.Id, newFriend.Id);
 
-        return Ok(ModelConverter.MapChatUserToPersonDto(newFriend));
+        return Ok("Friend request sent!");
+    }
+
+    [HttpPost]
+    [Route("ConfirmFriendRequest")]
+    public async Task<IActionResult> ConfirmFriendRequest([FromBody] FriendRequestDto model)
+    {
+        var newFriend = await _userManager.FindByIdAsync(model.Id);
+        if (newFriend == null)
+        {
+            return NotFound($"User with id ({model.Id}) was not found.");
+        }
+        
+        var user = await _userManager.GetUserAsync(User);
+        if (user == null)
+        {
+            return NotFound($"User was not found.");
+        }
+
+        await _userService.ConfirmFriendAsync(newFriend.Id, user.Id);
+
+        return Ok("Friend request sent!");
     }
 }

@@ -3,29 +3,15 @@ using ChatProject.Models.ChatUserModels;
 
 namespace ChatProject.Models.JoinModels;
 
-public class ChannelUser
+public class ChannelUserDto
 {
-    public string Id { get; set; } = Guid.NewGuid().ToString();
+    public string Id { get; set; }
     public string UserId { get; set; }
-    public ChatUser User { get; set; }
+    public PersonDto User { get; set; }
     
     public string ChannelId { get; set; }
-    public ChatChannel Channel { get; set; }
+    public ChatChannelDto Channel { get; set; }
     
     public ChannelRole Role { get; set; }
     public UserStatus Status { get; set; }
-}
-
-public enum ChannelRole
-{
-    Creator,
-    Admin,
-    Member
-}
-
-public enum UserStatus
-{
-    Pending,
-    Active,
-    Banned
 }
