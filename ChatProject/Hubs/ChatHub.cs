@@ -83,13 +83,13 @@ public class ChatHub : Hub
     {
         try
         {
-            await _channelService.InviteUserToChannelAsync(Context.UserIdentifier!, channelId, newUserId, ChannelRole.Member);
-            
-            Clients.User(newUserId).SendAsync("GetChannelInvite", )
+            var invite = await _channelService.InviteUserToChannelAsync(Context.UserIdentifier!, channelId, newUserId, ChannelRole.Member);
+
+            await Clients.User(newUserId).SendAsync("GetChannelInvite", invite);
         }
         catch (Exception ex)
         {
-            
+            throw new HubException("Error sending channel invite: " + ex);
         }
     }
     

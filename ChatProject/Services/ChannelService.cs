@@ -47,7 +47,7 @@ public class ChannelService : IChannelService
         await _repository.AddMessageToChannelAsync(id, chatMessage);
     }
 
-    public async Task InviteUserToChannelAsync(string callerId, string channelId, string userId, ChannelRole role)
+    public async Task<ChannelUserDto> InviteUserToChannelAsync(string callerId, string channelId, string userId, ChannelRole role)
     {
         var user = await _userRepository.GetUserWithChannelsByIdAsync(callerId);
         if (user == null)
@@ -74,12 +74,11 @@ public class ChannelService : IChannelService
 
         if (role == ChannelRole.Admin)
         {
-            await _repository.InviteMemberToChannelAsync(channelId, userId);
+            return await _repository.InviteMemberToChannelAsync(channelId, userId);
         }
-        else
-        {
-            await  _repository.InviteMemberToChannelAsync(channelId, userId);
-        }
+        
+        return await  _repository.InviteMemberToChannelAsync(channelId, userId);
+        
     }
     public async Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId)
     {
