@@ -32,6 +32,7 @@ public class ChatUserRepository : IChatUserRepository
         var user = await _dbSet
             .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
+                    .ThenInclude(c => c.ChannelUsers)
             .Include(u => u.FriendsInitiated)
                 .ThenInclude(f => f.Receiver)
             .Include(u => u.FriendsReceived)
