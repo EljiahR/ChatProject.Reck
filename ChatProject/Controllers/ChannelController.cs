@@ -85,8 +85,8 @@ public class ChannelController : ControllerBase
 
         try
         {
-            await _channelService.ConfirmChannelInviteAsync(model.channelId, currentUserId);
-            return Ok("Successfully joined channel!");
+            var channel = await _channelService.ConfirmChannelInviteAsync(model.channelId, currentUserId);
+            return Ok(new { message = "Successfully joined channel!", channel});
         }
         catch (Exception error)
         {

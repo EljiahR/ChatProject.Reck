@@ -81,7 +81,7 @@ public class ChannelService : IChannelService
             await  _repository.InviteMemberToChannelAsync(channelId, userId);
         }
     }
-    public async Task ConfirmChannelInviteAsync(string channelId, string userId)
+    public async Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId)
     {
         var user = await _userRepository.GetUserWithChannelsByIdAsync(userId);
         if (user == null)
@@ -95,7 +95,7 @@ public class ChannelService : IChannelService
             throw new InvalidOperationException("Invite not found.");
         }
         
-        await _repository.ConfirmChannelInviteAsync(channelId, userId);
+        return await _repository.ConfirmChannelInviteAsync(channelId, userId);
     }
 
     public async Task RemoveUserFromChannelAsync(string channelId, string userId)
