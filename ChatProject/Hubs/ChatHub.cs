@@ -94,6 +94,26 @@ public class ChatHub : Hub
     }
     
     // Accept Channel Invites
+    public async Task AcceptChannelInvite(string channelId)
+    {
+        try
+        {
+            var userId = Context.UserIdentifier!;
+            var channelDto = await _channelService.ConfirmChannelInviteAsync(channelId, userId);
+            _connectionManager.AddChannel(userId, channelId);
+            var connections = _connectionManager.GetConnections(userId);
+            foreach (string connection in connections)
+            {
+                await Groups.AddToGroupAsync(connection, channelId);
+            }
+
+            await Clients.Caller.SendAsync("JoinChannel", channelDto);
+        }
+        catch (Exception ex)
+        {
+            throw new HubException("Error accepting channel invite: " + ex);
+        }
+    }
     
     // Send/Receive Friend Requests
     
