@@ -15,13 +15,15 @@ public class ChatHub : Hub
     private readonly IChannelService _channelService;
     private readonly IMessageService _messageService;
     private readonly UserManager<ChatUser> _userManager;
+    private readonly IChatUserService _userService;
     private readonly ConnectionManager _connectionManager;
 
-    public ChatHub(IChannelService channelService, IMessageService messageService, UserManager<ChatUser> userManager, ConnectionManager connectionManager)
+    public ChatHub(IChannelService channelService, IMessageService messageService, UserManager<ChatUser> userManager, IChatUserService userService, ConnectionManager connectionManager)
     {
         _channelService = channelService;
         _messageService = messageService;
         _userManager = userManager;
+        _userService = userService;
         _connectionManager = connectionManager;
     }
     
@@ -102,12 +104,13 @@ public class ChatHub : Hub
             var channelDto = await _channelService.ConfirmChannelInviteAsync(channelId, userId);
             _connectionManager.AddChannel(userId, channelId);
             var connections = _connectionManager.GetConnections(userId);
-            foreach (string connection in connections)
+            foreach (var connection in connections)
             {
                 await Groups.AddToGroupAsync(connection, channelId);
             }
 
             await Clients.Caller.SendAsync("JoinChannel", channelDto);
+            // Return to channel new user 
         }
         catch (Exception ex)
         {
@@ -116,6 +119,23 @@ public class ChatHub : Hub
     }
     
     // Send/Receive Friend Requests
+    public async Task SendFriendRequest(string userId)
+    {
+        try
+        {
+            var request = await _userService.RequestFriendAsync(Context.UserIdentifier!, userId);
+            if (request == null)
+            {
+                throw new HubException("Error sending friend request: " + ex);
+            }
+
+            await Clients.User(userId).SendAsync("ReceiveFriendRequest", request);
+        }
+        catch (Exception ex)
+        {
+            throw new HubException("Error sending friend request: " + ex);
+        }
+    }
     
     // Accept Friend Requests
     
