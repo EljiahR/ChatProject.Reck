@@ -108,9 +108,12 @@ public class ChatHub : Hub
             {
                 await Groups.AddToGroupAsync(connection, channelId);
             }
-
+            
+            // Return new user dto to channel 
+            await Clients.Group(channelId).SendAsync("ReceiveNewMember",
+                new { channelId, user = channelDto.Members.FirstOrDefault(u => u.Id == userId) });
+            
             await Clients.Caller.SendAsync("JoinChannel", channelDto);
-            // Return to channel new user 
         }
         catch (Exception ex)
         {
