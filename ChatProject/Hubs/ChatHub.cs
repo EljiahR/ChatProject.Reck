@@ -126,7 +126,7 @@ public class ChatHub : Hub
             var request = await _userService.RequestFriendAsync(Context.UserIdentifier!, userId);
             if (request == null)
             {
-                throw new HubException("Error sending friend request: " + ex);
+                throw new HubException("Error sending friend request: ");
             }
 
             await Clients.User(userId).SendAsync("ReceiveFriendRequest", request);
@@ -138,7 +138,24 @@ public class ChatHub : Hub
     }
     
     // Accept Friend Requests
-    
+    public async Task AcceptFriendRequest(string initiatorId)
+    {
+        try
+        {
+            var friendship = await _userService.ConfirmFriendAsync(initiatorId, Context.UserIdentifier!);
+            if (friendship == null)
+            {
+                throw new HubException("Error accepting friend request: ");
+            }
+
+            await Clients.Caller.SendAsync("ReceiveNewFriend", friendship.Initiator);
+            await Clients.User(initiatorId).SendAsync("ReceiveNewFriend", friendship.Receiver);
+        }
+        catch (Exception ex)
+        {
+            throw new HubException("Error accepting friend request: " + ex);
+        }
+    }
     
     // Adds user to all channel groups, handles multiple connections from the same user as well
     // No I did not come up with this myself

@@ -42,7 +42,7 @@ public class ChatUserRepository : IChatUserRepository
         return user != null ? ModelConverter.MapChatUserToDto(user) : null;
     }
 
-    public async Task<PersonDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
+    public async Task<FriendshipDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
     {
         var friendship = await _friendships.Where(f => f.InitiatorId == initiatorId && f.ReceiverId == receiverId)
             .FirstOrDefaultAsync();
@@ -50,7 +50,7 @@ public class ChatUserRepository : IChatUserRepository
         {
             friendship.Status = FriendshipStatus.Friends;
             await _context.SaveChangesAsync();
-            return ModelConverter.MapChatUserToPersonDto(friendship.Initiator);
+            return ModelConverter.MapFriendshipToDto(friendship);
         }
 
         return null;

@@ -23,7 +23,7 @@ public class ChatUserService : IChatUserService
         return await _repository.GetUserDtoAsync(userId);
     }
 
-    public async Task<PersonDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
+    public async Task<FriendshipDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
     {
         return await _repository.ConfirmFriendAsync(initiatorId, receiverId);
     }
