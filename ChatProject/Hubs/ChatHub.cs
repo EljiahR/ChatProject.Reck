@@ -77,7 +77,7 @@ public class ChatHub : Hub
         }
 
         await _channelService.RemoveMessageFromChannelAsync(channelId, messageId);
-        await Clients.Group(channelId).SendAsync("DeleteMessage", messageId);
+        await Clients.Group(channelId).SendAsync("DeleteMessage", channelId, messageId);
     }
     
     // Send/Receive Channel Invites
