@@ -101,7 +101,11 @@ public class ChannelRepository : IChannelRepository
 
     public async Task<ChannelUserDto> InviteMemberToChannelAsync(string channelId, string userId)
     {
-        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId)
+            .Include(cu => cu.User)
+            .Include(cu => cu.Channel)
+            .FirstOrDefaultAsync();
+        
         if (entry == null)
         {
             var newEntry = new ChannelUser
@@ -114,6 +118,9 @@ public class ChannelRepository : IChannelRepository
 
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.User).LoadAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.Channel).LoadAsync();
+            
             return ModelConverter.MapChannelUserToDto(newEntry);
         }
 
@@ -122,7 +129,11 @@ public class ChannelRepository : IChannelRepository
     
     public async Task<ChannelUserDto> InviteAdminToChannelAsync(string channelId, string userId)
     {
-        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId).FirstOrDefaultAsync();
+        var entry = await _channelUsers.Where(cu => cu.ChannelId == channelId && cu.UserId == userId)
+            .Include(cu => cu.User)
+            .Include(cu => cu.Channel)
+            .FirstOrDefaultAsync();
+        
         if (entry == null || entry.Role != ChannelRole.Admin)
         {
             var newEntry = new ChannelUser
@@ -135,6 +146,9 @@ public class ChannelRepository : IChannelRepository
 
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.User).LoadAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.Channel).LoadAsync();
+            
             return ModelConverter.MapChannelUserToDto(newEntry);
         }
 
