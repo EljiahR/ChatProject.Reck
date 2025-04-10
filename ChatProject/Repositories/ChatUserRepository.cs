@@ -33,6 +33,9 @@ public class ChatUserRepository : IChatUserRepository
             .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
                     .ThenInclude(c => c.ChannelUsers)
+            .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
+                .ThenInclude(cu => cu.Channel)
+                    .ThenInclude(c => c.ChannelMessages)
             .Include(u => u.FriendsInitiated)
                 .ThenInclude(f => f.Receiver)
             .Include(u => u.FriendsReceived)
@@ -42,18 +45,24 @@ public class ChatUserRepository : IChatUserRepository
         return user != null ? ModelConverter.MapChatUserToDto(user) : null;
     }
 
-    public async Task ConfirmFriendAsync(string initiatorId, string receiverId)
+    public async Task<FriendshipDto?> ConfirmFriendAsync(string initiatorId, string receiverId)
     {
         var friendship = await _friendships.Where(f => f.InitiatorId == initiatorId && f.ReceiverId == receiverId)
+            .Include(f => f.Initiator)
+            .Include(f => f.Receiver)
             .FirstOrDefaultAsync();
+        
         if (friendship != null)
         {
             friendship.Status = FriendshipStatus.Friends;
             await _context.SaveChangesAsync();
+            return ModelConverter.MapFriendshipToDto(friendship);
         }
+
+        return null;
     }
 
-    public async Task RequestFriendAsync(string initiatorId, string receiverId)
+    public async Task<FriendshipDto?> RequestFriendAsync(string initiatorId, string receiverId)
     {
         var friendship = await _friendships.Where(f => f.InitiatorId == initiatorId && f.ReceiverId == receiverId)
             .FirstOrDefaultAsync();
@@ -68,7 +77,15 @@ public class ChatUserRepository : IChatUserRepository
 
             await _friendships.AddAsync(newFriendship);
             await _context.SaveChangesAsync();
+
+            await _context.Entry(newFriendship).Reference(f => f.Initiator).LoadAsync();
+            await _context.Entry(newFriendship).Reference(f => f.Receiver).LoadAsync();
+
+            
+            return ModelConverter.MapFriendshipToDto(newFriendship!);
         }
+
+        return null;
     }
 
 }
