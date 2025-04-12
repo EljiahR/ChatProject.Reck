@@ -35,7 +35,7 @@ public class ChatUserRepository : IChatUserRepository
                     .ThenInclude(c => c.ChannelUsers)
             .Include(u => u.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.Channel)
-                    .ThenInclude(c => c.ChannelMessages)
+                    .ThenInclude(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .Include(u => u.FriendsInitiated)
                 .ThenInclude(f => f.Receiver)
             .Include(u => u.FriendsReceived)
