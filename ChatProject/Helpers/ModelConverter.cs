@@ -41,6 +41,10 @@ public class ModelConverter
 
     public static PersonDto MapChatUserToPersonDto(ChatUser user, bool isFriend = false)
     {
+        if (user == null)
+        {
+            return new PersonDto { UserName = "N/A" };
+        }
         return new PersonDto { UserName = user.UserName, Id = user.Id, IsFriend = isFriend};
     }
 
