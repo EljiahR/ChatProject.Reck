@@ -30,7 +30,7 @@ public class ChannelRepository : IChannelRepository
     public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
         return await _channels
-            .Include(c => c.ChannelMessages)
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .Include(c => c.ChannelUsers)
             .ThenInclude(cu => cu.User)
             .AsNoTracking()
@@ -55,7 +55,7 @@ public class ChannelRepository : IChannelRepository
             .Where(c => c.ChannelUsers.Any(cu => cu.UserId == userId))
             .Include(c => c.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.User)
-            .Include(c => c.ChannelMessages)
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .ToListAsync();
 
         return channels.Select(c => ModelConverter.MapChannelToDto(c, c.ChannelUsers.First(cu => cu.UserId == userId).Status)).ToList();
@@ -89,7 +89,7 @@ public class ChannelRepository : IChannelRepository
     public async Task AddMessageToChannelAsync(string id, ChatMessage chatMessage)
     {
         var channel = await _channels
-            .Include(c => c.ChannelMessages)
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .FirstOrDefaultAsync(x => x.Id == id);
         
         if (channel != null)
@@ -168,7 +168,7 @@ public class ChannelRepository : IChannelRepository
         var channel = await _channels
             .Include(c => c.ChannelUsers.Where(cu => cu.Status != UserStatus.Banned))
                 .ThenInclude(cu => cu.User)
-            .Include(c => c.ChannelMessages)
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .FirstOrDefaultAsync(c => c.Id == channelId);
 
         if (channel == null)
@@ -194,7 +194,7 @@ public class ChannelRepository : IChannelRepository
     public async Task RemoveMessageFromChannelAsync(string channelId, string messageId)
     {
         var channel = await _channels
-            .Include(c => c.ChannelMessages)
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
             .Where(c => c.Id == channelId)
             .FirstOrDefaultAsync();
         if (channel != null)
