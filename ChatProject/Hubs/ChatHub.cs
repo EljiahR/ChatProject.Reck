@@ -160,6 +160,30 @@ public class ChatHub : Hub
         }
     }
     
+    // User is typing notification
+    public async Task StartUserTyping(string channelId)
+    {
+        var userId = Context.UserIdentifier;
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new HubException("No userId found during StartUserTyping");
+        }
+
+        await Clients.Group(channelId).SendAsync("ReceiveUserTyping", userId);
+    }
+    
+    // User stopping typing notification
+    public async Task EndUserTyping(string channelId)
+    {
+        var userId = Context.UserIdentifier;
+        if (string.IsNullOrEmpty(userId))
+        {
+            throw new HubException("No userId found during EndUserTyping");
+        }
+
+        await Clients.Group(channelId).SendAsync("ReceiveUserStoppedTyping", userId);
+    }
+    
     // Adds user to all channel groups, handles multiple connections from the same user as well
     // No I did not come up with this myself
     public override async Task OnConnectedAsync()
