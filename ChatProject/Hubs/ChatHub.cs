@@ -169,7 +169,7 @@ public class ChatHub : Hub
             throw new HubException("No userId found during StartUserTyping");
         }
 
-        await Clients.Group(channelId).SendAsync("ReceiveUserTyping", userId);
+        await Clients.Group(channelId).SendAsync("ReceiveUserTyping", new { channelId, userId });
     }
     
     // User stopping typing notification
@@ -181,7 +181,7 @@ public class ChatHub : Hub
             throw new HubException("No userId found during EndUserTyping");
         }
 
-        await Clients.Group(channelId).SendAsync("ReceiveUserStoppedTyping", userId);
+        await Clients.Group(channelId).SendAsync("ReceiveUserStoppedTyping", new { channelId, userId });
     }
     
     // Adds user to all channel groups, handles multiple connections from the same user as well
