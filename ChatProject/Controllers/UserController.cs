@@ -69,7 +69,6 @@ public class UserController : ControllerBase
     [AllowAnonymous]
     public async Task<IActionResult> SignInUser([FromBody] LoginDto model)
     {
-        await _signInManager.SignOutAsync();
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByNameAsync(model.UserName!);
@@ -78,8 +77,8 @@ public class UserController : ControllerBase
                 return Unauthorized(new { message = "Invalid username or password." });
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
-            if (result.Succeeded)
+            var passwordMatches = await _userManager.CheckPasswordAsync(user, model.Password!);
+            if (passwordMatches)
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
                 return Ok(new { message = "Login successful!", info = userDto });
