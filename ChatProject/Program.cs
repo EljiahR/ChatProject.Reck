@@ -98,6 +98,7 @@ builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
 builder.Services.AddScoped<IChatUserService, ChatUserService>();
 
 builder.Services.AddSingleton<ConnectionManager>();
+builder.Services.AddSingleton(jwtSettings!);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
