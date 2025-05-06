@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using ChatProject.ConfigModels;
 using ChatProject.Helpers;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
@@ -17,12 +18,14 @@ public class UserController : ControllerBase
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IChatUserService _userService;
+    private readonly JwtSettings _jwtSettings;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, JwtSettings jwtSettings)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _userService = userService;
+        _jwtSettings = jwtSettings;
     }
 
     [HttpPost]
@@ -81,7 +84,8 @@ public class UserController : ControllerBase
             if (passwordMatches)
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
-                return Ok(new { message = "Login successful!", info = userDto });
+                var token = TokenGenerators.GenerateAccessToken(user.UserName!, _jwtSettings);
+                return Ok(new { message = "Login successful!", info = userDto, AccessToken = token });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
