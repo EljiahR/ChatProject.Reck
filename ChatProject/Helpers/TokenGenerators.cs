@@ -9,13 +9,14 @@ namespace ChatProject.Helpers;
 
 public static class TokenGenerators 
 {
-    public static string GenerateAccessToken(string username, JwtSettings jwtSettings) 
+    public static string GenerateAccessToken(string username, string userId, JwtSettings jwtSettings) 
     {
         var claims = new[] 
         {
             new Claim(JwtRegisteredClaimNames.Sub, username),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Name, username)
+            new Claim(JwtRegisteredClaimNames.Name, username),
+            new Claim(ClaimTypes.NameIdentifier, userId)
         };
 
         var securityKey = new SymmetricSecurityKey(

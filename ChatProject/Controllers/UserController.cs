@@ -66,11 +66,18 @@ public class UserController : ControllerBase
         if (signInResult.Succeeded)
         {
             var userDto = await _userService.GetUserDtoAsync(user.Id);
-            return Ok(new { message = "User created successfully!", info = userDto });
+            var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
+            var refreshToken = new RefreshToken
+            {
+                Token = TokenGenerators.GenerateRefreshToken(),
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+            };
+            await _refreshTokenService.AddTokenAsync(refreshToken);
+            return Ok(new { message = "User created successfully!", info = userDto, accessToken, refreshToken });
         }
-        return BadRequest("Problem signing in user.");
-        
 
+        return BadRequest("Problem signing in user.");
     }
 
     [HttpPost("SignIn")]
@@ -89,7 +96,7 @@ public class UserController : ControllerBase
             if (passwordMatches)
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
-                var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, _jwtSettings);
+                var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
                 var refreshToken = new RefreshToken
                 {
                     Token = TokenGenerators.GenerateRefreshToken(),
@@ -107,7 +114,7 @@ public class UserController : ControllerBase
     }
 
     [HttpGet]
-    [Route("refresh")]
+    [Route("Refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody model)
     {
@@ -119,7 +126,7 @@ public class UserController : ControllerBase
         if (existingToken != null && !existingToken.IsRevoked && existingToken.UserId == model.UserId) 
         {
             var user = await _userService.GetUserDtoAsync(model.UserId);
-            var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, _jwtSettings);
+            var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, user.Id, _jwtSettings);
             return Ok(new { accessToken });
         }
 
@@ -130,8 +137,6 @@ public class UserController : ControllerBase
     [Route("Status")]
     public async Task<IActionResult> LoginStatus()
     {
-        if (!User.Identity!.IsAuthenticated) return Unauthorized();
-
         var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
         var user = await _userService.GetUserDtoAsync(currentUserId);
         if (user == null)
@@ -147,7 +152,8 @@ public class UserController : ControllerBase
     [Route("SignOut")]
     public async Task<IActionResult> SignOutUser()
     {
-        await _signInManager.SignOutAsync();
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        await _refreshTokenService.DeleteUserTokensAsync(currentUserId);
 
         return Ok("Logged out successfully!");
     }
