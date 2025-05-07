@@ -3,11 +3,13 @@ using ChatProject.ConfigModels;
 using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.FromBodyModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ChatProject.Controllers;
 
@@ -94,7 +96,7 @@ public class UserController : ControllerBase
                     UserId = user.Id,
                     ExpiresAt = DateTime.UtcNow.AddDays(7),
                 };
-                await _refreshTokenService.AddToken(refreshToken);
+                await _refreshTokenService.AddTokenAsync(refreshToken);
 
                 return Ok(new { message = "Login successful!", info = userDto, accessToken, refreshToken });
             }
@@ -102,6 +104,26 @@ public class UserController : ControllerBase
         }
 
         return BadRequest("Invalid data.");
+    }
+
+    [HttpGet]
+    [Route("refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody model)
+    {
+        if (!ModelState.IsValid) {
+            return BadRequest();
+        }
+
+        var existingToken = await _refreshTokenService.GetRefreshTokenAsync(model.RefreshToken);
+        if (existingToken != null && !existingToken.IsRevoked && existingToken.UserId == model.UserId) 
+        {
+            var user = await _userService.GetUserDtoAsync(model.UserId);
+            var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, _jwtSettings);
+            return Ok(new { accessToken });
+        }
+
+        return Unauthorized();
     }
 
     [HttpGet]

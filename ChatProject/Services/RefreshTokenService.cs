@@ -9,20 +9,24 @@ public class RefreshTokenService : IRefreshTokenService
     {
         _repository = repository;
     }
-    public async Task<List<RefreshToken>> GetRefreshTokens()
+    public async Task<RefreshToken?> GetRefreshTokenAsync(string refreshToken)
     {
-        return await _repository.GetRefreshTokens();
+        return await _repository.GetRefreshTokenAsync(refreshToken);
     }
-    public async Task<RefreshToken> AddToken(RefreshToken token)
+    public async Task<List<RefreshToken>> GetRefreshTokensAsync()
     {
-        return await _repository.AddToken(token);
+        return await _repository.GetRefreshTokensAsync();
     }
-    public async Task DeleteUserTokens(string userId)
+    public async Task<RefreshToken> AddTokenAsync(RefreshToken token)
     {
-        await _repository.DeleteUserTokens(userId);
+        return await _repository.AddTokenAsync(token);
     }
-    public async Task RevokeToken(string refreshToken)
+    public async Task DeleteUserTokensAsync(string userId)
     {
-        await _repository.RevokeToken(refreshToken);
+        await _repository.DeleteUserTokensAsync(userId);
+    }
+    public async Task RevokeTokenAsync(string refreshToken)
+    {
+        await _repository.RevokeTokenAsync(refreshToken);
     }
 }

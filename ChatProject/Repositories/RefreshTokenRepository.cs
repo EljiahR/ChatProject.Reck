@@ -14,12 +14,15 @@ public class RefreshTokenRepository : IRefreshTokenRepository
         _context = context;
         _dbSet = context.Set<RefreshToken>();
     }
-
-    public async Task<List<RefreshToken>> GetRefreshTokens() 
+    public async Task<RefreshToken?> GetRefreshTokenAsync(string refreshToken)
+    {
+        return await _dbSet.FirstOrDefaultAsync(t => t.Token == refreshToken);
+    }
+    public async Task<List<RefreshToken>> GetRefreshTokensAsync() 
     {
         return await _dbSet.ToListAsync();
     }
-    public async Task<RefreshToken> AddToken(RefreshToken token)
+    public async Task<RefreshToken> AddTokenAsync(RefreshToken token)
     {
         var existingTokens = await _dbSet.Where(t => t.UserId == token.UserId).ToListAsync();
         if (existingTokens.Count > 0) {
@@ -31,7 +34,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
 
         return token;
     }
-    public async Task DeleteUserTokens(string userId)
+    public async Task DeleteUserTokensAsync(string userId)
     {
         var existingTokens = await _dbSet.Where(t => t.UserId == userId).ToListAsync();
         if (existingTokens.Count > 0) {
@@ -39,7 +42,7 @@ public class RefreshTokenRepository : IRefreshTokenRepository
             await _context.SaveChangesAsync();
         }
     }
-    public async Task RevokeToken(string refreshToken)
+    public async Task RevokeTokenAsync(string refreshToken)
     {
         var existingToken = await _dbSet.FirstOrDefaultAsync(t => t.Token == refreshToken);
         if (existingToken != null) 
