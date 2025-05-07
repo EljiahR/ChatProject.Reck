@@ -2,7 +2,7 @@ using ChatProject.Models;
 
 namespace ChatProject.Services;
 
-public class RefreshTokenService
+public class RefreshTokenService : IRefreshTokenService
 {
     private readonly IRefreshTokenService _repository;
     public RefreshTokenService(IRefreshTokenService repository)

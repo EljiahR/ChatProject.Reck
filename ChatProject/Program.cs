@@ -96,6 +96,9 @@ builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
 builder.Services.AddScoped<IChatUserService, ChatUserService>();
 
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
 builder.Services.AddSingleton<ConnectionManager>();
 builder.Services.AddSingleton(jwtSettings!);
 
