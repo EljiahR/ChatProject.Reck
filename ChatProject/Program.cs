@@ -6,7 +6,6 @@ using ChatProject.Hubs;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Repositories;
 using ChatProject.Services;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
