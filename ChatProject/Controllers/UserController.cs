@@ -1,6 +1,7 @@
 using System.Security.Claims;
 using ChatProject.ConfigModels;
 using ChatProject.Helpers;
+using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
@@ -18,13 +19,15 @@ public class UserController : ControllerBase
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IChatUserService _userService;
+    private readonly IRefreshTokenService _refreshTokenService;
     private readonly JwtSettings _jwtSettings;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, JwtSettings jwtSettings)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, IRefreshTokenService refreshTokenService, JwtSettings jwtSettings)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _userService = userService;
+        _refreshTokenService = refreshTokenService;
         _jwtSettings = jwtSettings;
     }
 
@@ -84,8 +87,16 @@ public class UserController : ControllerBase
             if (passwordMatches)
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
-                var token = TokenGenerators.GenerateAccessToken(user.UserName!, _jwtSettings);
-                return Ok(new { message = "Login successful!", info = userDto, AccessToken = token });
+                var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, _jwtSettings);
+                var refreshToken = new RefreshToken
+                {
+                    Token = TokenGenerators.GenerateRefreshToken(),
+                    UserId = user.Id,
+                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+                };
+                await _refreshTokenService.AddToken(refreshToken);
+
+                return Ok(new { message = "Login successful!", info = userDto, accessToken, refreshToken });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
