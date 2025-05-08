@@ -1,11 +1,12 @@
 using ChatProject.Models;
+using ChatProject.Repositories;
 
 namespace ChatProject.Services;
 
 public class RefreshTokenService : IRefreshTokenService
 {
-    private readonly IRefreshTokenService _repository;
-    public RefreshTokenService(IRefreshTokenService repository)
+    private readonly IRefreshTokenRepository _repository;
+    public RefreshTokenService(IRefreshTokenRepository repository)
     {
         _repository = repository;
     }

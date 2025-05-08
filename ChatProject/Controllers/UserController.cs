@@ -62,8 +62,8 @@ public class UserController : ControllerBase
             return BadRequest(result.Errors);
         }
         
-        var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-        if (signInResult.Succeeded)
+        var passwordMatches = await _userManager.CheckPasswordAsync(user, model.Password!);
+        if (passwordMatches)
         {
             var userDto = await _userService.GetUserDtoAsync(user.Id);
             var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
@@ -74,7 +74,7 @@ public class UserController : ControllerBase
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
             };
             await _refreshTokenService.AddTokenAsync(refreshToken);
-            return Ok(new { message = "User created successfully!", info = userDto, accessToken, refreshToken });
+            return Ok(new { message = "User created successfully!", info = userDto, accessToken, refreshToken = refreshToken.Token });
         }
 
         return BadRequest("Problem signing in user.");
@@ -105,7 +105,7 @@ public class UserController : ControllerBase
                 };
                 await _refreshTokenService.AddTokenAsync(refreshToken);
 
-                return Ok(new { message = "Login successful!", info = userDto, accessToken, refreshToken });
+                return Ok(new { message = "Login successful!", info = userDto, accessToken, refreshToken = refreshToken.Token });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -113,7 +113,7 @@ public class UserController : ControllerBase
         return BadRequest("Invalid data.");
     }
 
-    [HttpGet]
+    [HttpPost]
     [Route("Refresh")]
     [AllowAnonymous]
     public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody model)
