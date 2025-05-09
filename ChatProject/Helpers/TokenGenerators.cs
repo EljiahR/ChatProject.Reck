@@ -13,10 +13,10 @@ public static class TokenGenerators
     {
         var claims = new[] 
         {
-            new Claim(JwtRegisteredClaimNames.Sub, username),
+            new Claim(ClaimTypes.NameIdentifier, userId),
             new Claim(JwtRegisteredClaimNames.Jti, Guid.NewGuid().ToString()),
-            new Claim(JwtRegisteredClaimNames.Name, username),
-            new Claim(ClaimTypes.NameIdentifier, userId)
+            new Claim(JwtRegisteredClaimNames.Name, username)
+            
         };
 
         var securityKey = new SymmetricSecurityKey(

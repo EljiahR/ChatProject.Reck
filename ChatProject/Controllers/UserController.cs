@@ -1,9 +1,11 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using ChatProject.ConfigModels;
 using ChatProject.Helpers;
 using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.FromBodyModels;
+using ChatProject.Models.ReturnModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -105,7 +107,7 @@ public class UserController : ControllerBase
                 };
                 await _refreshTokenService.AddTokenAsync(refreshToken);
 
-                return Ok(new { message = "Login successful!", info = userDto, accessToken, refreshToken = refreshToken.Token });
+                return Ok(new SignInReturn { Message = "Login successful!", Info = userDto, AccessToken = accessToken, RefreshToken = refreshToken.Token });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -133,19 +135,22 @@ public class UserController : ControllerBase
         return Unauthorized();
     }
 
-    [HttpGet]
+    [HttpGet] 
     [Route("Status")]
     public async Task<IActionResult> LoginStatus()
     {
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null)
+        {
+            return Unauthorized("Invalid access token.");
+        }
         var user = await _userService.GetUserDtoAsync(currentUserId);
         if (user == null)
         {
             return Unauthorized("Error finding user");
         }
-        
+
         return Ok(user);
-        
     }
 
     [HttpPost]

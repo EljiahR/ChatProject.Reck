@@ -6,6 +6,7 @@ using ChatProject.Hubs;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Repositories;
 using ChatProject.Services;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -65,7 +66,11 @@ var jwtSettings = builder.Configuration
     .Get<JwtSettings>();
 
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+builder.Services.AddAuthentication(options =>
+    {
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
     .AddJwtBearer(options => {
         options.TokenValidationParameters = new TokenValidationParameters {
             ValidateIssuer = true,
@@ -88,17 +93,23 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 }
                 
                 return Task.CompletedTask;
+            },
+            
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Auth failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated!");
+                return Task.CompletedTask;
             }
         };
+
     });
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("BelongToChannel", policy =>
-    {
-        policy.RequireClaim("Channel");
-    });
-});
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -132,7 +143,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowChat");
 app.UseAuthentication();
 app.UseAuthorization();
