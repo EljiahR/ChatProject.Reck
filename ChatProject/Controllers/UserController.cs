@@ -1,11 +1,17 @@
+using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
+using ChatProject.ConfigModels;
 using ChatProject.Helpers;
+using ChatProject.Models;
 using ChatProject.Models.ChatUserModels;
+using ChatProject.Models.FromBodyModels;
+using ChatProject.Models.ReturnModels;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ChatProject.Controllers;
 
@@ -17,12 +23,16 @@ public class UserController : ControllerBase
     private readonly SignInManager<ChatUser> _signInManager;
     private readonly UserManager<ChatUser> _userManager;
     private readonly IChatUserService _userService;
+    private readonly IRefreshTokenService _refreshTokenService;
+    private readonly JwtSettings _jwtSettings;
 
-    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService)
+    public UserController(SignInManager<ChatUser> signInManager, UserManager<ChatUser> userManager, IChatUserService userService, IRefreshTokenService refreshTokenService, JwtSettings jwtSettings)
     {
         _signInManager = signInManager;
         _userManager = userManager;
         _userService = userService;
+        _refreshTokenService = refreshTokenService;
+        _jwtSettings = jwtSettings;
     }
 
     [HttpPost]
@@ -54,22 +64,28 @@ public class UserController : ControllerBase
             return BadRequest(result.Errors);
         }
         
-        var signInResult = await _signInManager.PasswordSignInAsync(user, model.Password, false, false);
-        if (signInResult.Succeeded)
+        var passwordMatches = await _userManager.CheckPasswordAsync(user, model.Password!);
+        if (passwordMatches)
         {
             var userDto = await _userService.GetUserDtoAsync(user.Id);
-            return Ok(new { message = "User created successfully!", info = userDto });
+            var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
+            var refreshToken = new RefreshToken
+            {
+                Token = TokenGenerators.GenerateRefreshToken(),
+                UserId = user.Id,
+                ExpiresAt = DateTime.UtcNow.AddDays(7),
+            };
+            await _refreshTokenService.AddTokenAsync(refreshToken);
+            return Ok(new { message = "User created successfully!", info = userDto, accessToken, refreshToken = refreshToken.Token });
         }
-        return BadRequest("Problem signing in user.");
-        
 
+        return BadRequest("Problem signing in user.");
     }
 
     [HttpPost("SignIn")]
     [AllowAnonymous]
     public async Task<IActionResult> SignInUser([FromBody] LoginDto model)
     {
-        await _signInManager.SignOutAsync();
         if (ModelState.IsValid)
         {
             var user = await _userManager.FindByNameAsync(model.UserName!);
@@ -78,11 +94,20 @@ public class UserController : ControllerBase
                 return Unauthorized(new { message = "Invalid username or password." });
             }
 
-            var result = await _signInManager.PasswordSignInAsync(user, model.Password!, false, false);
-            if (result.Succeeded)
+            var passwordMatches = await _userManager.CheckPasswordAsync(user, model.Password!);
+            if (passwordMatches)
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
-                return Ok(new { message = "Login successful!", info = userDto });
+                var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
+                var refreshToken = new RefreshToken
+                {
+                    Token = TokenGenerators.GenerateRefreshToken(),
+                    UserId = user.Id,
+                    ExpiresAt = DateTime.UtcNow.AddDays(7),
+                };
+                await _refreshTokenService.AddTokenAsync(refreshToken);
+
+                return Ok(new SignInReturn { Message = "Login successful!", Info = userDto, AccessToken = accessToken, RefreshToken = refreshToken.Token });
             }
             return Unauthorized(new { message = "Invalid username or password." });
         }
@@ -90,28 +115,50 @@ public class UserController : ControllerBase
         return BadRequest("Invalid data.");
     }
 
-    [HttpGet]
+    [HttpPost]
+    [Route("Refresh")]
+    [AllowAnonymous]
+    public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenBody model)
+    {
+        if (!ModelState.IsValid) {
+            return BadRequest();
+        }
+
+        var existingToken = await _refreshTokenService.GetRefreshTokenAsync(model.RefreshToken);
+        if (existingToken is { IsRevoked: false }) 
+        {
+            var user = await _userService.GetUserDtoAsync(existingToken.UserId);
+            var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, user.Id, _jwtSettings);
+            return Ok(new { accessToken });
+        }
+
+        return Unauthorized(new {message = "Issue with refresh token", existingToken});
+    }
+
+    [HttpGet] 
     [Route("Status")]
     public async Task<IActionResult> LoginStatus()
     {
-        if (!User.Identity!.IsAuthenticated) return Unauthorized();
-
-        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        var currentUserId = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
+        if (currentUserId == null)
+        {
+            return Unauthorized("Invalid access token.");
+        }
         var user = await _userService.GetUserDtoAsync(currentUserId);
         if (user == null)
         {
             return Unauthorized("Error finding user");
         }
-        
+
         return Ok(user);
-        
     }
 
     [HttpPost]
     [Route("SignOut")]
     public async Task<IActionResult> SignOutUser()
     {
-        await _signInManager.SignOutAsync();
+        var currentUserId = User.FindFirstValue(ClaimTypes.NameIdentifier)!;
+        await _refreshTokenService.DeleteUserTokensAsync(currentUserId);
 
         return Ok("Logged out successfully!");
     }

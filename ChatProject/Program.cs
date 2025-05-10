@@ -1,3 +1,5 @@
+using System.Text;
+using ChatProject.ConfigModels;
 using ChatProject.Data;
 using ChatProject.Helpers;
 using ChatProject.Hubs;
@@ -5,8 +7,10 @@ using ChatProject.Models.ChatUserModels;
 using ChatProject.Repositories;
 using ChatProject.Services;
 using Microsoft.AspNetCore.Authentication.Cookies;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -56,19 +60,64 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequiredUniqueChars = 1;
 });
 
-builder.Services.Configure<CookieAuthenticationOptions>(IdentityConstants.ApplicationScheme, options =>
-{
-    options.Cookie.SameSite = SameSiteMode.None;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-});
+// Bind JWT settings from configuration
+var jwtSettings = builder.Configuration
+    .GetSection("Jwt")
+    .Get<JwtSettings>();
 
-builder.Services.AddAuthorization(options =>
-{
-    options.AddPolicy("BelongToChannel", policy =>
+if (jwtSettings == null || string.IsNullOrWhiteSpace(jwtSettings.Key)) {
+    jwtSettings = new JwtSettings {
+        Key = builder.Configuration["Key"] ?? "",
+        Issuer = builder.Configuration["Issuer"] ?? "",
+        Audience = builder.Configuration["Audience"] ?? "",
+        ExpirationSeconds = int.Parse(builder.Configuration["ExpirationSeconds"] ?? "7200")
+    };
+}
+
+builder.Services.AddAuthentication(options =>
     {
-        policy.RequireClaim("Channel");
+        options.DefaultAuthenticateScheme = JwtBearerDefaults.AuthenticationScheme;
+        options.DefaultChallengeScheme = JwtBearerDefaults.AuthenticationScheme;
+    })
+    .AddJwtBearer(options => {
+        options.TokenValidationParameters = new TokenValidationParameters {
+            ValidateIssuer = true,
+            ValidateAudience = true,
+            ValidateLifetime = true,
+            ValidateIssuerSigningKey = true,
+            ValidIssuer = jwtSettings.Issuer,
+            ValidAudience = jwtSettings.Audience,
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSettings.Key))
+        };
+
+        options.Events = new JwtBearerEvents
+        {
+            OnMessageReceived = context =>
+            {
+                var accessToken = context.Request.Query["access_token"];
+                if (!string.IsNullOrWhiteSpace(accessToken))
+                {
+                    context.Token = accessToken;
+                }
+                
+                return Task.CompletedTask;
+            },
+            
+            OnAuthenticationFailed = context =>
+            {
+                Console.WriteLine($"Auth failed: {context.Exception.Message}");
+                return Task.CompletedTask;
+            },
+            OnTokenValidated = context =>
+            {
+                Console.WriteLine("Token validated!");
+                return Task.CompletedTask;
+            }
+        };
+
     });
-});
+
+builder.Services.AddAuthorization();
 
 // Add services to the container.
 builder.Services.AddScoped<IMessageRepository, MessageRepository>();
@@ -80,7 +129,11 @@ builder.Services.AddScoped<IChannelService, ChannelService>();
 builder.Services.AddScoped<IChatUserRepository, ChatUserRepository>();
 builder.Services.AddScoped<IChatUserService, ChatUserService>();
 
+builder.Services.AddScoped<IRefreshTokenRepository, RefreshTokenRepository>();
+builder.Services.AddScoped<IRefreshTokenService, RefreshTokenService>();
+
 builder.Services.AddSingleton<ConnectionManager>();
+builder.Services.AddSingleton(jwtSettings!);
 
 builder.Services.AddControllers();
 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
@@ -98,7 +151,6 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
-
 app.UseCors("AllowChat");
 app.UseAuthentication();
 app.UseAuthorization();

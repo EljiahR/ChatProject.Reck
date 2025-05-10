@@ -17,6 +17,8 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
     public DbSet<ChatChannel> ChatChannels { get; set; }
     public DbSet<ChatMessage> ChatMessages { get; set; }
 
+    public DbSet<RefreshToken> RefreshTokens { get; set; }
+
     protected override void OnModelCreating(ModelBuilder builder)
     {
         // One-to-many: ChannelUser (join table) to User
