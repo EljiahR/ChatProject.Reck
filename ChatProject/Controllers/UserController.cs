@@ -132,7 +132,7 @@ public class UserController : ControllerBase
             return Ok(new { accessToken });
         }
 
-        return Unauthorized();
+        return Unauthorized(new {message = "Issue with refresh token", existingToken});
     }
 
     [HttpGet] 
