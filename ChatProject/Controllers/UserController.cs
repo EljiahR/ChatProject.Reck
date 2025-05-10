@@ -125,9 +125,9 @@ public class UserController : ControllerBase
         }
 
         var existingToken = await _refreshTokenService.GetRefreshTokenAsync(model.RefreshToken);
-        if (existingToken is { IsRevoked: false } && existingToken.UserId == model.UserId) 
+        if (existingToken is { IsRevoked: false }) 
         {
-            var user = await _userService.GetUserDtoAsync(model.UserId);
+            var user = await _userService.GetUserDtoAsync(existingToken.UserId);
             var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, user.Id, _jwtSettings);
             return Ok(new { accessToken });
         }
