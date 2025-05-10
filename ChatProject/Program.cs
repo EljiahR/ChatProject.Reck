@@ -65,6 +65,14 @@ var jwtSettings = builder.Configuration
     .GetSection("Jwt")
     .Get<JwtSettings>();
 
+if (jwtSettings == null || string.IsNullOrWhiteSpace(jwtSettings.Key)) {
+    jwtSettings = new JwtSettings {
+        Key = builder.Configuration["Key"] ?? "",
+        Issuer = builder.Configuration["Issuer"] ?? "",
+        Audience = builder.Configuration["Audience"] ?? "",
+        ExpirationSeconds = int.Parse(builder.Configuration["ExpirationSeconds"] ?? "7200")
+    };
+}
 
 builder.Services.AddAuthentication(options =>
     {
