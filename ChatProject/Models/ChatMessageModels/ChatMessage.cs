@@ -11,4 +11,5 @@ public class ChatMessage
     public DateTime SentAt { get; set; } = DateTime.UtcNow;
     public string ChannelId { get; set; }
     public string SentById { get; set; }
+    public List<string> Modifiers { get; set; } = new();
 }
