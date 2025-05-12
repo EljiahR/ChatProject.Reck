@@ -11,4 +11,5 @@ public class ChatChannelDto
     public List<PersonDto> Members { get; set; } = new();
     public ICollection<ChatMessage> ChannelMessages { get; set; } = new List<ChatMessage>();
     public bool IsPendingInvite { get; set; } = false;
+    public bool IsFrozen { get; set; } = false;
 }
