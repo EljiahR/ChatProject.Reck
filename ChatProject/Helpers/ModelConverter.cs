@@ -9,9 +9,11 @@ public class ModelConverter
 {
     public static ChatUserDto MapChatUserToDto(ChatUser userBo)
     {
-        List<PersonDto> friendList = new();
-        friendList.AddRange(userBo.FriendsInitiated.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Receiver, true)));
-        friendList.AddRange(userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Initiator, true)));
+        List<PersonDto> friendList =
+        [
+            .. userBo.FriendsInitiated.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Receiver, true)),
+            .. userBo.FriendsReceived.Where(f => f.Status == FriendshipStatus.Friends).Select(f => MapChatUserToPersonDto(f.Initiator, true)),
+        ];
         
         return new ChatUserDto() 
         { 
@@ -35,7 +37,8 @@ public class ModelConverter
             Members = userStatus == UserStatus.Pending || userStatus == UserStatus.Banned ? [] : channel.ChannelUsers?.Where(cu => cu.Role == ChannelRole.Member).Select(cu => MapChatUserToPersonDto(cu.User)).ToList() ?? new(),
             Owner = owner ?? new PersonDto {UserName = "N/A"},
             ChannelMessages = userStatus == UserStatus.Pending || userStatus == UserStatus.Banned ? [] : channel.ChannelMessages ?? [],
-            IsPendingInvite = userStatus == UserStatus.Pending
+            IsPendingInvite = userStatus == UserStatus.Pending,
+            IsFrozen = channel.IsFrozen
         };
     }
 

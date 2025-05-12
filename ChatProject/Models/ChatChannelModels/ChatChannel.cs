@@ -11,4 +11,5 @@ public class ChatChannel
     public string CreatedById { get; set; }
     public List<ChannelUser> ChannelUsers { get; set; } = new();
     public ICollection<ChatMessage> ChannelMessages { get; set; } = new List<ChatMessage>();
+    public bool IsFrozen { get; set; } = false;
 }
