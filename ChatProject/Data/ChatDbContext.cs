@@ -1,9 +1,11 @@
+using System.Text.Json;
 using ChatProject.Models;
 using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
 using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace ChatProject.Data;
 
@@ -21,6 +23,18 @@ public class ChatDbContext : IdentityDbContext<ChatUser>
 
     protected override void OnModelCreating(ModelBuilder builder)
     {
+        var isSqlite = Database.ProviderName == "MicrosoftEntityFrameworkCore.Sqlite";
+
+        var converter = new ValueConverter<List<string>, string>(
+            v => JsonSerializer.Serialize(v, (JsonSerializerOptions?)null),
+            v => JsonSerializer.Deserialize<List<string>>(v, (JsonSerializerOptions?)null) ?? new()
+        );
+
+        builder.Entity<ChatMessage>()
+            .Property(e => e.Modifiers)
+            .HasConversion(converter)
+            .HasColumnType(isSqlite ? "TEXT" : "jsonb");
+        
         // One-to-many: ChannelUser (join table) to User
         builder.Entity<ChannelUser>()
             .HasOne(cu => cu.User)
