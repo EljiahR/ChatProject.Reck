@@ -69,11 +69,13 @@ public class UserController : ControllerBase
         {
             var userDto = await _userService.GetUserDtoAsync(user.Id);
             var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
+            var requesterIp = HttpContext.Connection.RemoteIpAddress?.ToString();
             var refreshToken = new RefreshToken
             {
                 Token = TokenGenerators.GenerateRefreshToken(),
                 UserId = user.Id,
                 ExpiresAt = DateTime.UtcNow.AddDays(7),
+                CreatedByIp = requesterIp ?? ""
             };
             await _refreshTokenService.AddTokenAsync(refreshToken);
             return Ok(new { message = "User created successfully!", info = userDto, accessToken, refreshToken = refreshToken.Token });
@@ -99,11 +101,13 @@ public class UserController : ControllerBase
             {
                 var userDto = await _userService.GetUserDtoAsync(user.Id);
                 var accessToken = TokenGenerators.GenerateAccessToken(user.UserName!, user.Id, _jwtSettings);
+                var requesterIp = HttpContext.Connection.RemoteIpAddress?.ToString();
                 var refreshToken = new RefreshToken
                 {
                     Token = TokenGenerators.GenerateRefreshToken(),
                     UserId = user.Id,
                     ExpiresAt = DateTime.UtcNow.AddDays(7),
+                    CreatedByIp = requesterIp ?? ""
                 };
                 await _refreshTokenService.AddTokenAsync(refreshToken);
 
@@ -123,9 +127,10 @@ public class UserController : ControllerBase
         if (!ModelState.IsValid) {
             return BadRequest();
         }
-
+        
         var existingToken = await _refreshTokenService.GetRefreshTokenAsync(model.RefreshToken);
-        if (existingToken is { IsRevoked: false } && existingToken) 
+        var requesterIp = HttpContext.Connection.RemoteIpAddress?.ToString();
+        if (existingToken is { IsRevoked: false } && (string.IsNullOrWhiteSpace(existingToken.CreatedByIp) || existingToken.CreatedByIp == requesterIp)) 
         {
             var user = await _userService.GetUserDtoAsync(existingToken.UserId);
             var accessToken = TokenGenerators.GenerateAccessToken(user!.UserName!, user.Id, _jwtSettings);
