@@ -16,5 +16,6 @@ public interface IChannelService
     Task<ChatChannelDto> ConfirmChannelInviteAsync(string channelId, string userId);
     Task RemoveUserFromChannelAsync(string channelId, string userId);
     Task RemoveMessageFromChannelAsync(string channelId, string messageId);
+    Task UpdateChannelAsync(UpdateChatChannel channelUpdate);
 
 }

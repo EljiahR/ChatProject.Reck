@@ -207,4 +207,25 @@ public class ChannelRepository : IChannelRepository
             }
         }
     }
+
+    public async Task UpdateChannelAsync(UpdateChatChannel channelUpdate)
+    {
+        var channelToUpdate = await _channels
+            .FirstOrDefaultAsync(c => c.Id == channelUpdate.Id);
+
+        if (channelToUpdate == null) return;
+
+        if (channelUpdate.Name != null) 
+        {
+            channelToUpdate.Name = channelUpdate.Name;
+        }
+
+        if (channelUpdate.IsFrozen != null)
+        {
+            channelToUpdate.IsFrozen = channelUpdate.IsFrozen.Value;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
 }

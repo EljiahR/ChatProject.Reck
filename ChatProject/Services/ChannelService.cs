@@ -107,4 +107,9 @@ public class ChannelService : IChannelService
         await _repository.RemoveMessageFromChannelAsync(channelId, messageId);
     }
 
+    public async Task UpdateChannelAsync(UpdateChatChannel channelUpdate)
+    {
+        await _repository.UpdateChannelAsync(channelUpdate);
+    }
+
 }
