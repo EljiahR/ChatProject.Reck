@@ -23,14 +23,24 @@ public class ChannelRepository : IChannelRepository
         _channelUsers = _context.Set<ChannelUser>();
     }
 
-    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id)
+    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id, bool withoutIncludes)
     {
-        var foundChannel = await _channels
-            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
-            .Include(c => c.ChannelUsers)
-                .ThenInclude(cu => cu.User)
-            .AsNoTracking()
-            .FirstOrDefaultAsync(c => c.Id == id);
+        ChatChannel? foundChannel;
+        if (withoutIncludes)
+        {
+            foundChannel = await _channels
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+        else
+        {
+            foundChannel = await _channels
+                .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
+                .Include(c => c.ChannelUsers)
+                    .ThenInclude(cu => cu.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
 
         return foundChannel != null ? ModelConverter.MapChannelToDto(foundChannel, UserStatus.Active) : null;
     }

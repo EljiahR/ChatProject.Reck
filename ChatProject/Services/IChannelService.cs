@@ -6,7 +6,7 @@ namespace ChatProject.Services;
 
 public interface IChannelService
 {
-    Task<ChatChannelDto?> GetChannelByIdAsync(string id);
+    Task<ChatChannelDto?> GetChannelByIdAsync(string id, bool withoutIncludes = false);
     Task<List<ChatChannelDto>> GetAllChannelsAsync();
     Task<List<string>> GetAllUserChannelIdsAsync(string userId);
     Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId);
