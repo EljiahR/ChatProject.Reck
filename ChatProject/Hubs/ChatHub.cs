@@ -30,6 +30,12 @@ public class ChatHub : Hub
     
     public async Task SendMessage(string content, string channelId)
     {
+        var channel = await _channelService.GetChannelByIdAsync(channelId, true);
+        if (channel == null || channel.IsFrozen)
+        {
+            throw new HubException($"Channel is {(channel != null ? "frozen" : "unavailable.")}");
+        }
+        
         var userId = Context.UserIdentifier;
   
         if (Context.User == null || string.IsNullOrWhiteSpace(userId) || !_connectionManager.IsInChannel(userId, channelId))
