@@ -16,7 +16,7 @@ public class ChannelService : IChannelService
         _userRepository = userRepository;
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
+    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id)
     {
         return await _repository.GetChannelByIdAsync(id);
     }

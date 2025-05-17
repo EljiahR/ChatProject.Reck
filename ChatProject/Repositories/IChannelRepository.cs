@@ -7,7 +7,7 @@ namespace ChatProject.Repositories;
 
 public interface IChannelRepository
 {
-    Task<ChatChannel?> GetChannelByIdAsync(string id);
+    Task<ChatChannelDto?> GetChannelByIdAsync(string id);
     Task<List<ChatChannelDto>> GetAllChannelsAsync();
     Task<List<string>> GetAllUserChannelIdsAsync(string userId);
     Task<List<ChatChannelDto>> GetAllUserChannelsAsync(string userId);

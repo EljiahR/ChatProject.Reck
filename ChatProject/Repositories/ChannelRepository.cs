@@ -23,9 +23,16 @@ public class ChannelRepository : IChannelRepository
         _channelUsers = _context.Set<ChannelUser>();
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
+    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id)
     {
-        return await _channels.FindAsync(id);
+        var foundChannel = await _channels
+            .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
+            .Include(c => c.ChannelUsers)
+                .ThenInclude(cu => cu.User)
+            .AsNoTracking()
+            .FirstOrDefaultAsync(c => c.Id == id);
+
+        return foundChannel != null ? ModelConverter.MapChannelToDto(foundChannel, UserStatus.Active) : null;
     }
     public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
