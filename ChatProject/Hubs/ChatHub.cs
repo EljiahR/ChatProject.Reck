@@ -1,5 +1,6 @@
 using ChatProject.Helpers;
 using ChatProject.Models;
+using ChatProject.Models.ChatChannelModels;
 using ChatProject.Models.ChatUserModels;
 using ChatProject.Models.JoinModels;
 using ChatProject.Services;
@@ -29,6 +30,8 @@ public class ChatHub : Hub
     
     public async Task SendMessage(string content, string channelId)
     {
+        
+        
         var userId = Context.UserIdentifier;
   
         if (Context.User == null || string.IsNullOrWhiteSpace(userId) || !_connectionManager.IsInChannel(userId, channelId))
@@ -40,6 +43,13 @@ public class ChatHub : Hub
         if (user == null)
         {
             throw new HubException("Unauthorized");
+        }
+        
+        var channel = await _channelService.GetChannelByIdAsync(channelId);
+        
+        if (channel == null || (channel.IsFrozen && channel.Owner.Id != userId))
+        {
+            throw new HubException($"Channel is {(channel != null ? "frozen" : "unavailable.")}");
         }
         
         var message = new ChatMessage {Content = content, Username = user.UserName!, ChannelId = channelId, SentById = user.Id};
@@ -182,6 +192,35 @@ public class ChatHub : Hub
         }
 
         await Clients.Group(channelId).SendAsync("ReceiveUserStoppedTyping", new { channelId, userId });
+    }
+
+    public async Task UpdateChannel(UpdateChatChannel channelUpdate)
+    {
+        var userId = Context.UserIdentifier;
+        if (string.IsNullOrWhiteSpace(userId))
+        {
+            throw new HubException("UserId not found.");
+        }
+        
+        var user = await _userService.GetUserDtoAsync(userId);
+        if (user == null)
+        {
+            throw new HubException("Error finding user.");
+        }
+
+        var channelToUpdate = user.Channels.FirstOrDefault(c => c.Id == channelUpdate.Id);
+        if (channelToUpdate == null)
+        {
+            throw new HubException("User not in channel.");
+        }
+
+        if (userId != channelToUpdate.Owner.Id && channelToUpdate.Admins.Any(a => a.Id == userId))
+        {
+            throw new HubException("User does not have authority to update channel.");
+        }
+
+        await _channelService.UpdateChannelAsync(channelUpdate);
+        await Clients.Group(channelUpdate.Id).SendAsync("ReceiveChannelUpdate", channelUpdate);
     }
     
     // Adds user to all channel groups, handles multiple connections from the same user as well

@@ -23,9 +23,26 @@ public class ChannelRepository : IChannelRepository
         _channelUsers = _context.Set<ChannelUser>();
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
+    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id, bool withoutIncludes)
     {
-        return await _channels.FindAsync(id);
+        ChatChannel? foundChannel;
+        if (withoutIncludes)
+        {
+            foundChannel = await _channels
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+        else
+        {
+            foundChannel = await _channels
+                .Include(c => c.ChannelMessages.OrderBy(cm => cm.SentAt))
+                .Include(c => c.ChannelUsers)
+                    .ThenInclude(cu => cu.User)
+                .AsNoTracking()
+                .FirstOrDefaultAsync(c => c.Id == id);
+        }
+
+        return foundChannel != null ? ModelConverter.MapChannelToDto(foundChannel, UserStatus.Active) : null;
     }
     public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
@@ -207,4 +224,25 @@ public class ChannelRepository : IChannelRepository
             }
         }
     }
+
+    public async Task UpdateChannelAsync(UpdateChatChannel channelUpdate)
+    {
+        var channelToUpdate = await _channels
+            .FirstOrDefaultAsync(c => c.Id == channelUpdate.Id);
+
+        if (channelToUpdate == null) return;
+
+        if (channelUpdate.Name != null) 
+        {
+            channelToUpdate.Name = channelUpdate.Name;
+        }
+
+        if (channelUpdate.IsFrozen != null)
+        {
+            channelToUpdate.IsFrozen = channelUpdate.IsFrozen.Value;
+        }
+
+        await _context.SaveChangesAsync();
+    }
+
 }

@@ -16,9 +16,9 @@ public class ChannelService : IChannelService
         _userRepository = userRepository;
     }
 
-    public async Task<ChatChannel?> GetChannelByIdAsync(string id)
+    public async Task<ChatChannelDto?> GetChannelByIdAsync(string id, bool withoutIncludes = false)
     {
-        return await _repository.GetChannelByIdAsync(id);
+        return await _repository.GetChannelByIdAsync(id, withoutIncludes);
     }
     public async Task<List<ChatChannelDto>> GetAllChannelsAsync()
     {
@@ -105,6 +105,11 @@ public class ChannelService : IChannelService
     public async Task RemoveMessageFromChannelAsync(string channelId, string messageId)
     {
         await _repository.RemoveMessageFromChannelAsync(channelId, messageId);
+    }
+
+    public async Task UpdateChannelAsync(UpdateChatChannel channelUpdate)
+    {
+        await _repository.UpdateChannelAsync(channelUpdate);
     }
 
 }
