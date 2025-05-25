@@ -30,11 +30,7 @@ public class ChatHub : Hub
     
     public async Task SendMessage(string content, string channelId)
     {
-        var channel = await _channelService.GetChannelByIdAsync(channelId, true);
-        if (channel == null || channel.IsFrozen)
-        {
-            throw new HubException($"Channel is {(channel != null ? "frozen" : "unavailable.")}");
-        }
+        
         
         var userId = Context.UserIdentifier;
   
@@ -47,6 +43,13 @@ public class ChatHub : Hub
         if (user == null)
         {
             throw new HubException("Unauthorized");
+        }
+        
+        var channel = await _channelService.GetChannelByIdAsync(channelId);
+        
+        if (channel == null || (channel.IsFrozen && channel.Owner.Id != userId))
+        {
+            throw new HubException($"Channel is {(channel != null ? "frozen" : "unavailable.")}");
         }
         
         var message = new ChatMessage {Content = content, Username = user.UserName!, ChannelId = channelId, SentById = user.Id};
