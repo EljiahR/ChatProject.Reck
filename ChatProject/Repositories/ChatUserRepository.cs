@@ -11,12 +11,16 @@ public class ChatUserRepository : IChatUserRepository
     private readonly DbContext _context;
     private readonly DbSet<ChatUser> _dbSet;
     private readonly DbSet<Friendship> _friendships;
+    private readonly DbSet<ChannelUser> _channelUsers;
+    private readonly IConfiguration _config;
 
-    public ChatUserRepository(ChatDbContext context)
+    public ChatUserRepository(ChatDbContext context, IConfiguration config)
     {
         _context = context;
         _dbSet = _context.Set<ChatUser>();
         _friendships = _context.Set<Friendship>();
+        _channelUsers = _context.Set<ChannelUser>();
+        _config = config;
     }
     
     public async Task<ChatUser?> GetUserWithChannelsByIdAsync(string userId)
@@ -42,6 +46,20 @@ public class ChatUserRepository : IChatUserRepository
             .Include(u => u.FriendsReceived)
                 .ThenInclude(f => f.Initiator)
             .FirstOrDefaultAsync(u => u.Id == userId);
+
+        var homeId = _config["HomeId"];
+        if (!string.IsNullOrWhiteSpace(homeId) && user != null && user.ChannelUsers.Any(cu => cu.ChannelId == homeId))
+        {
+            var newEntry = new ChannelUser
+            {
+                UserId = user.Id,
+                ChannelId = homeId,
+                Role = ChannelRole.Member,
+                Status = UserStatus.Active
+            };
+            _channelUsers.Add(newEntry);
+            await _context.SaveChangesAsync();
+        }
 
         return user != null ? ModelConverter.MapChatUserToDto(user) : null;
     }
