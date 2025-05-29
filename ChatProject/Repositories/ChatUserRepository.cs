@@ -48,7 +48,7 @@ public class ChatUserRepository : IChatUserRepository
             .FirstOrDefaultAsync(u => u.Id == userId);
 
         var homeId = _config["HomeId"];
-        if (!string.IsNullOrWhiteSpace(homeId) && user != null && user.ChannelUsers.Any(cu => cu.ChannelId == homeId))
+        if (!string.IsNullOrWhiteSpace(homeId) && user != null && !user.ChannelUsers.Any(cu => cu.ChannelId == homeId))
         {
             var newEntry = new ChannelUser
             {
@@ -59,6 +59,8 @@ public class ChatUserRepository : IChatUserRepository
             };
             _channelUsers.Add(newEntry);
             await _context.SaveChangesAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.User).LoadAsync();
+            await _context.Entry(newEntry).Reference(cu => cu.Channel).LoadAsync();
         }
 
         return user != null ? ModelConverter.MapChatUserToDto(user) : null;
