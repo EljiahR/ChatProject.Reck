@@ -81,9 +81,12 @@ public class ChatHub : Hub
             throw new HubException("Message not found");
         }
 
-        if (messageToDelete.SentById != userId)
+        var channel = await _channelService.GetChannelByIdAsync(channelId);
+
+
+        if (messageToDelete.SentById != userId && channel != null && channel.Owner.Id != userId)
         {
-            throw new HubException("Only sender can delete their message");
+            throw new HubException("Only sender and owner can delete this message");
         }
 
         await _channelService.RemoveMessageFromChannelAsync(channelId, messageId);
